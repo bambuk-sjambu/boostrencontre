@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoostRencontre — Boostez vos rencontres libertines</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #E4406F;
+            --primary-dark: #C7335D;
+            --primary-light: #FF6B95;
+            --secondary: #6C5CE7;
+            --accent: #FF8A65;
+            --dark: #1A1A2E;
+            --dark-soft: #2D2D44;
+            --gray-100: #F8F9FA;
+            --gray-200: #E9ECEF;
+            --gray-300: #DEE2E6;
+            --gray-500: #8E8E9A;
+            --white: #FFFFFF;
+            --gradient-hero: linear-gradient(135deg, #E4406F 0%, #6C5CE7 50%, #4834D4 100%);
+            --gradient-warm: linear-gradient(135deg, #E4406F 0%, #FF6B95 100%);
+            --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8f0f4 100%);
+            --shadow-sm: 0 2px 8px rgba(228, 64, 111, 0.08);
+            --shadow-md: 0 4px 20px rgba(228, 64, 111, 0.12);
+            --shadow-lg: 0 8px 40px rgba(228, 64, 111, 0.16);
+            --shadow-xl: 0 12px 60px rgba(228, 64, 111, 0.2);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xl: 24px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--dark);
+            background: var(--gray-100);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* === NAV === */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(228,64,111,0.08);
+            transition: all 0.3s ease;
+        }
+        nav.scrolled {
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+        .logo span { font-weight: 400; }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-soft);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--primary); }
+
+        /* === BUTTONS === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: var(--gradient-warm);
+            color: white;
+            box-shadow: 0 4px 16px rgba(228,64,111,0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(228,64,111,0.4);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-white {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* === HERO === */
+        .hero {
+            background: var(--gradient-hero);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding-top: 64px;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,107,149,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-text h1 {
+            font-size: 52px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+        }
+        .hero-text h1 em {
+            font-style: normal;
+            position: relative;
+            display: inline-block;
+        }
+        .hero-text h1 em::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+        }
+        .hero-text p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 36px;
+            line-height: 1.7;
+            max-width: 480px;
+        }
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 48px;
+        }
+        .hero-stat {
+            text-align: left;
+        }
+        .hero-stat .number {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+        }
+        .hero-stat .label {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+        }
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero-cards {
+            position: relative;
+            width: 360px;
+            height: 460px;
+        }
+        .hero-card {
+            position: absolute;
+            width: 300px;
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: var(--shadow-xl);
+            transition: transform 0.3s ease;
+        }
+        .hero-card:nth-child(1) {
+            top: 0; left: 30px;
+            transform: rotate(-4deg);
+            z-index: 3;
+        }
+        .hero-card:nth-child(2) {
+            top: 40px; left: 60px;
+            transform: rotate(3deg);
+            z-index: 2;
+            opacity: 0.85;
+        }
+        .hero-card:nth-child(3) {
+            top: 80px; left: 20px;
+            transform: rotate(-2deg);
+            z-index: 1;
+            opacity: 0.65;
+        }
+        .hero-card .card-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-warm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        .hero-card .card-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .hero-card .card-type {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-bottom: 12px;
+        }
+        .hero-card .card-msg {
+            font-size: 14px;
+            color: var(--dark-soft);
+            background: var(--gray-100);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            line-height: 1.5;
+        }
+        .hero-card .card-msg em {
+            color: var(--primary);
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        /* === SECTIONS === */
+        section {
+            padding: 100px 24px;
+        }
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .section-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge-pink {
+            background: rgba(228,64,111,0.1);
+            color: var(--primary);
+        }
+        .badge-purple {
+            background: rgba(108,92,231,0.1);
+            color: var(--secondary);
+        }
+        .badge-orange {
+            background: rgba(255,138,101,0.1);
+            color: var(--accent);
+        }
+        .section-header h2 {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        .section-header p {
+            font-size: 17px;
+            color: var(--gray-500);
+            max-width: 560px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* === DESIRES GRID === */
+        .desires-section { background: white; }
+        .desires-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .desire-card {
+            background: var(--gradient-card);
+            border-radius: var(--radius);
+            padding: 32px;
+            border: 1px solid rgba(228,64,111,0.06);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .desire-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-warm);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .desire-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        .desire-card:hover::before { opacity: 1; }
+        .desire-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 16px;
+        }
+        .desire-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .desire-card p {
+            font-size: 14px;
+            color: var(--gray-500);
+            line-height: 1.6;
+        }
+        .desire-card .template-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 14px;
+            padding: 4px 12px;
+            background: rgba(228,64,111,0.06);
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* === STYLES SECTION === */
+        .styles-section {
+            background: var(--dark);
+            position: relative;
+            overflow: hidden;
+        }
+        .styles-section::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            right: -200px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(228,64,111,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .styles-section .section-header h2 { color: white; }
+        .styles-section .section-header p { color: rgba(255,255,255,0.5); }
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .style-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .style-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-warm);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .style-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-3px);
+            border-color: rgba(228,64,111,0.3);
+        }
+        .style-card:hover::after { opacity: 1; }
+        .style-icon {
+            font-size: 32px;
+            margin-bottom: 14px;
+            display: block;
+        }
+        .style-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            text-transform: capitalize;
+        }
+        .style-card p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+        }
+
+        /* === PROFILE CATEGORIES === */
+        .profile-section { background: white; }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .profile-card {
+            display: flex;
+            gap: 20px;
+            padding: 24px;
+            border-radius: var(--radius);
+            background: var(--gray-100);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .profile-card:hover {
+            border-color: rgba(228,64,111,0.15);
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+        .profile-card .p-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(228,64,111,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .profile-card h4 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .profile-card p {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.5;
+        }
+
+        /* === HOW IT WORKS === */
+        .how-section {
+            background: linear-gradient(180deg, var(--gray-100) 0%, white 100%);
+        }
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            counter-reset: step;
+        }
+        .how-step {
+            text-align: center;
+            position: relative;
+        }
+        .how-step::before {
+            counter-increment: step;
+            content: counter(step);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: var(--gradient-warm);
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+            box-shadow: 0 4px 16px rgba(228,64,111,0.25);
+        }
+        .how-step h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .how-step p {
+            font-size: 14px;
+            color: var(--gray-500);
+            line-height: 1.6;
+        }
+        .how-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: calc(50% + 36px);
+            width: calc(100% - 72px);
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-light), rgba(228,64,111,0.1));
+        }
+
+        /* === CTA SECTION === */
+        .cta-section {
+            background: var(--gradient-hero);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+        .cta-section h2 {
+            font-size: 40px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .cta-section p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 36px;
+            position: relative;
+        }
+        .cta-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* === PLATFORMS BAR === */
+        .platforms-bar {
+            background: white;
+            padding: 40px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .platforms-bar p {
+            font-size: 13px;
+            color: var(--gray-500);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+        .platforms-logos {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            align-items: center;
+        }
+        .platform-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-500);
+            transition: color 0.2s;
+        }
+        .platform-logo:hover { color: var(--dark); }
+        .platform-logo .p-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* === FOOTER === */
+        footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.5);
+            padding: 48px 24px;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 800;
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        footer p { font-size: 13px; }
+
+        /* === ANIMATIONS === */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-4deg); }
+            50% { transform: translateY(-12px) rotate(-4deg); }
+        }
+        .hero-card:nth-child(1) { animation: float 6s ease-in-out infinite; }
+        .hero-card:nth-child(2) { animation: float 6s ease-in-out 1s infinite; }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            .hero-inner { grid-template-columns: 1fr; text-align: center; }
+            .hero-text p { margin: 0 auto 36px; }
+            .hero-actions { justify-content: center; }
+            .hero-stats { justify-content: center; }
+            .hero-visual { display: none; }
+            .desires-grid { grid-template-columns: repeat(2, 1fr); }
+            .styles-grid { grid-template-columns: repeat(2, 1fr); }
+            .how-grid { grid-template-columns: repeat(2, 1fr); }
+            .how-step::after { display: none; }
+        }
+        @media (max-width: 640px) {
+            .hero-text h1 { font-size: 36px; }
+            .section-header h2 { font-size: 28px; }
+            .desires-grid { grid-template-columns: 1fr; }
+            .styles-grid { grid-template-columns: 1fr; }
+            .profile-grid { grid-template-columns: 1fr; }
+            .how-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .hero-stats { flex-direction: column; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+    <div class="nav-inner">
+        <div class="logo">Boost<span>Rencontre</span></div>
+        <div class="nav-links">
+            <a href="#desires">Envies</a>
+            <a href="#styles">Styles</a>
+            <a href="#profil">Profil IA</a>
+            <a href="#comment">Comment ca marche</a>
+            <a href="/profile" class="btn btn-primary" style="padding: 8px 20px; font-size: 13px;">Mon profil</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-text">
+            <h1>Des messages qui <em>captent</em> l'attention</h1>
+            <p>BoostRencontre genere des messages personnalises et intelligents pour chaque profil. 9 types d'envies, 8 styles de communication, une IA qui s'adapte a vous.</p>
+            <div class="hero-actions">
+                <a href="/" class="btn btn-white">Lancer le dashboard</a>
+                <a href="#desires" class="btn btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">Decouvrir</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="number">9</div>
+                    <div class="label">Categories d'envies</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="number">8</div>
+                    <div class="label">Styles de message</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="number">10</div>
+                    <div class="label">Facettes de profil</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-cards">
+                <div class="hero-card">
+                    <div class="card-avatar">&#9829;</div>
+                    <div class="card-name">CoupleComplice75</div>
+                    <div class="card-type">Couple F Bi &middot; 32 ans &middot; Paris</div>
+                    <div class="card-msg">
+                        <em>Message genere :</em><br>
+                        Votre description m'a vraiment interpele... cette envie de complicite et d'authenticite, ca resonne beaucoup chez moi.
+                    </div>
+                </div>
+                <div class="hero-card">
+                    <div class="card-avatar">&#9733;</div>
+                    <div class="card-name">LibreEtCurieuse</div>
+                    <div class="card-type">Femme Bi &middot; 28 ans</div>
+                    <div class="card-msg">
+                        <em>Style mystérieux</em>
+                    </div>
+                </div>
+                <div class="hero-card">
+                    <div class="card-avatar">&#9830;</div>
+                    <div class="card-name">DuoSensuel</div>
+                    <div class="card-type">Couple &middot; 35 ans</div>
+                    <div class="card-msg">
+                        <em>Style complice</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PLATFORMS -->
+<div class="platforms-bar">
+    <p>Compatible avec vos plateformes</p>
+    <div class="platforms-logos">
+        <div class="platform-logo">
+            <span class="p-dot" style="background: #FE3C72;"></span>
+            Tinder
+        </div>
+        <div class="platform-logo">
+            <span class="p-dot" style="background: #E4406F;"></span>
+            Meetic
+        </div>
+        <div class="platform-logo">
+            <span class="p-dot" style="background: #6C5CE7;"></span>
+            Wyylde
+        </div>
+    </div>
+</div>
+
+<!-- DESIRES / ENVIES -->
+<section class="desires-section" id="desires">
+    <div class="section-inner">
+        <div class="section-header fade-up">
+            <span class="section-badge badge-pink">Envies</span>
+            <h2>9 categories d'envies,<br>13 templates de messages</h2>
+            <p>Chaque envie dispose de templates d'approche calibres. L'IA s'en inspire pour generer des messages personnalises et pertinents.</p>
+        </div>
+        <div class="desires-grid">
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(255,107,149,0.1);">&#128293;</div>
+                <h3>Gang bang</h3>
+                <p>Organisez ou participez a des soirees dans un cadre respectueux et selectionne.</p>
+                <span class="template-count">&#9998; 3 templates</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(108,92,231,0.1);">&#128259;</div>
+                <h3>Echangisme</h3>
+                <p>Partagez des moments complices entre couples experimentes ou curieux.</p>
+                <span class="template-count">&#9998; 2 templates</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(45,45,68,0.08);">&#9878;</div>
+                <h3>BDSM</h3>
+                <p>Explorez les jeux de pouvoir et la domination douce dans un cadre safe et consenti.</p>
+                <span class="template-count">&#9998; 2 templates</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(255,138,101,0.1);">&#128065;</div>
+                <h3>Exhibition</h3>
+                <p>Montrez-vous, regardez. Partagez l'excitation de l'exhibition assumee.</p>
+                <span class="template-count">&#9998; 1 template</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(46,213,115,0.1);">&#128156;</div>
+                <h3>Feeling</h3>
+                <p>La connexion d'abord. Prenez le temps d'une vraie rencontre avant d'aller plus loin.</p>
+                <span class="template-count">&#9998; 1 template</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(253,203,110,0.15);">&#128092;</div>
+                <h3>Fetichisme</h3>
+                <p>Des fetishes assumes pour des rencontres entre personnes ouvertes d'esprit.</p>
+                <span class="template-count">&#9998; 1 template</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(214,48,49,0.08);">&#9889;</div>
+                <h3>Hard</h3>
+                <p>Pratiques intenses dans un cadre consenti. Pour ceux qui aiment l'intensite.</p>
+                <span class="template-count">&#9998; 1 template</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(255,182,193,0.2);">&#128148;</div>
+                <h3>Papouilles</h3>
+                <p>Tendresse, caresses, sensualite. Des rencontres douces et complices.</p>
+                <span class="template-count">&#9998; 1 template</span>
+            </div>
+            <div class="desire-card fade-up">
+                <div class="desire-icon" style="background: rgba(108,92,231,0.08);">&#128101;</div>
+                <h3>Pluralite</h3>
+                <p>Plans a plusieurs dans une ambiance detendue et conviviale.</p>
+                <span class="template-count">&#9998; 1 template</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STYLES DE COMMUNICATION -->
+<section class="styles-section" id="styles">
+    <div class="section-inner">
+        <div class="section-header fade-up">
+            <span class="section-badge badge-purple">Styles</span>
+            <h2>8 styles de communication</h2>
+            <p>Adaptez votre approche a chaque profil. L'IA choisit le meilleur style ou vous laisse decider.</p>
+        </div>
+        <div class="styles-grid">
+            <div class="style-card fade-up">
+                <span class="style-icon">&#129302;</span>
+                <h3>Auto</h3>
+                <p>L'IA analyse le profil et choisit le style le plus adapte automatiquement.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#127801;</span>
+                <h3>Romantique</h3>
+                <p>Doux et attentionne. Montre un interet sincere et une vraie sensibilite.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#128165;</span>
+                <h3>Direct sexe</h3>
+                <p>Assume sur le desir. Pas vulgaire mais clairement oriente plaisir.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#128514;</span>
+                <h3>Humoristique</h3>
+                <p>Drole et decale. L'humour brise la glace mieux que tout.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#128218;</span>
+                <h3>Intellectuel</h3>
+                <p>Curieux et cultive. Pose des questions profondes, engage le debat.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#127757;</span>
+                <h3>Aventurier</h3>
+                <p>Spontane et audacieux. Propose une experience, montre l'action.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#127769;</span>
+                <h3>Mysterieux</h3>
+                <p>Intrigant et enigmatique. Ne devoile pas tout, donne envie d'en savoir plus.</p>
+            </div>
+            <div class="style-card fade-up">
+                <span class="style-icon">&#129309;</span>
+                <h3>Complice</h3>
+                <p>Chaleureux et proche. Comme si vous etiez deja amis de longue date.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROFIL IA — 10 CATEGORIES -->
+<section class="profile-section" id="profil">
+    <div class="section-inner">
+        <div class="section-header fade-up">
+            <span class="section-badge badge-orange">Profil IA</span>
+            <h2>10 facettes de votre personnalite</h2>
+            <p>L'IA utilise ces 10 categories pour generer des messages qui vous ressemblent vraiment. Plus votre profil est riche, plus les messages sont pertinents.</p>
+        </div>
+        <div class="profile-grid">
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#128150;</div>
+                <div>
+                    <h4>Passions</h4>
+                    <p>Vos centres d'interet, hobbies et passions qui vous animent au quotidien.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#128276;</div>
+                <div>
+                    <h4>Pratiques</h4>
+                    <p>Vos preferences libertines, pratiques et experiences — echangisme, BDSM, etc.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#129504;</div>
+                <div>
+                    <h4>Personnalite</h4>
+                    <p>Traits de caractere, temperament et ce qui fait votre singularite.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#128170;</div>
+                <div>
+                    <h4>Physique</h4>
+                    <p>Apparence, style vestimentaire et la facon dont vous vous decrivez.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#127891;</div>
+                <div>
+                    <h4>Etudes &amp; Metier</h4>
+                    <p>Parcours professionnel, formation et ce qui vous passionne dans votre travail.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#9992;</div>
+                <div>
+                    <h4>Voyages</h4>
+                    <p>Destinations preferees, experiences de voyage et envies d'exploration.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#127926;</div>
+                <div>
+                    <h4>Musique &amp; Culture</h4>
+                    <p>Gouts musicaux, films, series, livres — tout ce qui nourrit votre esprit.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#9917;</div>
+                <div>
+                    <h4>Sport</h4>
+                    <p>Activites physiques pratiquees, sports suivis et votre rapport au corps.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#128516;</div>
+                <div>
+                    <h4>Humour</h4>
+                    <p>Votre style d'humour — sarcastique, absurde, pince-sans-rire, bon vivant.</p>
+                </div>
+            </div>
+            <div class="profile-card fade-up">
+                <div class="p-icon">&#9878;</div>
+                <div>
+                    <h4>Valeurs</h4>
+                    <p>Ce qui compte pour vous — respect, liberte, authenticite, bienveillance.</p>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 48px;" class="fade-up">
+            <a href="/profile" class="btn btn-primary">Configurer mon profil IA</a>
+        </div>
+    </div>
+</section>
+
+<!-- COMMENT CA MARCHE -->
+<section class="how-section" id="comment">
+    <div class="section-inner">
+        <div class="section-header fade-up">
+            <span class="section-badge badge-pink">Process</span>
+            <h2>Comment ca marche</h2>
+            <p>4 etapes pour des messages qui convertissent.</p>
+        </div>
+        <div class="how-grid">
+            <div class="how-step fade-up">
+                <h4>Configurez votre profil</h4>
+                <p>Renseignez vos 10 facettes pour que l'IA comprenne qui vous etes.</p>
+            </div>
+            <div class="how-step fade-up">
+                <h4>Choisissez vos envies</h4>
+                <p>Selectionnez les categories et templates d'approche qui vous correspondent.</p>
+            </div>
+            <div class="how-step fade-up">
+                <h4>L'IA genere les messages</h4>
+                <p>Des messages uniques, adaptes a chaque profil visite, dans votre style.</p>
+            </div>
+            <div class="how-step fade-up">
+                <h4>Engagez la conversation</h4>
+                <p>Envoi automatique ou manuel. L'IA gere aussi les reponses.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="section-inner">
+        <h2 class="fade-up">Pret a booster vos rencontres ?</h2>
+        <p class="fade-up">Lancez le dashboard et commencez a envoyer des messages intelligents.</p>
+        <div class="cta-actions fade-up">
+            <a href="/" class="btn btn-white">Ouvrir le dashboard</a>
+            <a href="/profile" class="btn btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">Mon profil IA</a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-logo">BoostRencontre</div>
+        <p>IA + Automatisation pour les sites de rencontres libertines</p>
+    </div>
+</footer>
+
+<script>
+    // Nav scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, i * 80);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            const target = document.querySelector(a.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+# Rapport de tests -- BoostRencontre
+
+## Informations generales
+
+| Champ | Valeur |
+|-------|--------|
+| Date | YYYY-MM-DD |
+| Testeur | [Nom] |
+| Version | [commit hash ou date du code] |
+| OS | [ex: Ubuntu 24.04] |
+| Python | [ex: 3.12.3] |
+| Navigateur Playwright | [ex: Chromium 126] |
+
+## Resume
+
+| Categorie | Total | Pass | Fail | Skip | Taux |
+|-----------|-------|------|------|------|------|
+| Connexion (TC-001 a TC-003) | 3 | | | | |
+| Profil IA (TC-010 a TC-012) | 3 | | | | |
+| Likes (TC-020 a TC-021) | 2 | | | | |
+| Messages IA (TC-030 a TC-033) | 4 | | | | |
+| Reponses (TC-040 a TC-043) | 4 | | | | |
+| Dashboard (TC-050 a TC-052) | 3 | | | | |
+| Securite (TC-060 a TC-062) | 3 | | | | |
+| **TOTAL** | **22** | | | | |
+
+---
+
+## Detail par test
+
+### Connexion
+
+#### TC-001 : Ouverture du navigateur
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-002 : Login manuel et detection
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-003 : Persistance de session
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+### Profil IA
+
+#### TC-010 : Consultation du profil IA
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-011 : Modification du profil IA
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-012 : Enrichissement IA du profil
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+### Likes
+
+#### TC-020 : Lancer les likes (follow + crush)
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-021 : Likes avec filtre de profil
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+### Messages IA
+
+#### TC-030 : Envoi de premier message IA
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Style teste** :
+- **Message envoye** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-031 : Test de chaque style de communication
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Styles testes** :
+  - [ ] auto
+  - [ ] romantique
+  - [ ] direct_sexe
+  - [ ] humoristique
+  - [ ] intellectuel
+  - [ ] aventurier
+  - [ ] mysterieux
+  - [ ] complice
+- **Observations par style** :
+- **Bugs detectes** :
+
+#### TC-032 : Adaptation par type de destinataire
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Types testes** :
+  - [ ] Femme (tutoiement)
+  - [ ] Homme (tutoiement)
+  - [ ] Couple (vouvoiement)
+  - [ ] Couple F Bi (vouvoiement + complicite feminine)
+- **Observations** :
+- **Bugs detectes** :
+
+#### TC-033 : Detection des desirs dans la bio
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Desirs detectes** :
+- **Observations** :
+- **Bugs detectes** :
+
+### Reponses
+
+#### TC-040 : Reponse aux discussions non lues
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Nombre de reponses envoyees** :
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-041 : Anti-doublon
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Bugs detectes** :
+
+#### TC-042 : Detection de rejet
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Bugs detectes** :
+
+#### TC-043 : Auto-reply (boucle continue)
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Nombre de cycles observes** :
+- **Intervalle configure** :
+- **Observations** :
+- **Bugs detectes** :
+
+### Dashboard
+
+#### TC-050 : Affichage du dashboard
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Captures d'ecran** :
+- **Bugs detectes** :
+
+#### TC-051 : Configuration des parametres
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Bugs detectes** :
+
+#### TC-052 : Gestion des templates de message
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Operations testees** :
+  - [ ] Creation
+  - [ ] Modification
+  - [ ] Suppression
+- **Observations** :
+- **Bugs detectes** :
+
+### Securite
+
+#### TC-060 : Token d'authentification
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Bugs detectes** :
+
+#### TC-061 : Routes debug protegees
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Bugs detectes** :
+
+#### TC-062 : Filtre de securite IA
+- **Statut** : [ ] PASS  [ ] FAIL  [ ] SKIP
+- **Observations** :
+- **Bugs detectes** :
+
+---
+
+## Bugs detectes
+
+| # | TC | Severite | Description | Reproductible | Statut |
+|---|-----|----------|-------------|---------------|--------|
+| 1 | | | | | |
+| 2 | | | | | |
+| 3 | | | | | |
+
+Severite : Critique / Majeur / Mineur / Cosmetique
+
+## Remarques generales
+
+[Impressions, suggestions, points d'attention, ameliorations proposees]
+
+## Prochaines actions
+
+- [ ] [Action 1]
+- [ ] [Action 2]
+- [ ] [Action 3]

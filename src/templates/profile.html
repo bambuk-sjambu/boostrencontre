@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil IA - BoostRencontre</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; margin: 30px 0; font-size: 2em; background: linear-gradient(135deg, #ff6b6b, #ee5a24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { margin: 20px 0 15px; color: #ff6b6b; font-size: 1.2em; }
+        .card { background: #1a1a2e; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #2a2a4a; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 600; transition: all 0.2s; display: inline-block; margin: 5px; }
+        .btn-primary { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: #2a2a4a; color: #e0e0e0; border: 1px solid #3a3a5a; }
+        .btn-sm { padding: 5px 12px; font-size: 0.8em; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em; }
+        input, textarea { width: 100%; padding: 8px 12px; background: #0f0f1a; border: 1px solid #3a3a5a; border-radius: 6px; color: #e0e0e0; font-size: 1em; margin-bottom: 15px; }
+        textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .cat-item { margin-bottom: 12px; }
+        .cat-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+        .cat-label .name { color: #ff6b6b; font-weight: 600; font-size: 0.95em; }
+        .cat-label .status { font-size: 0.75em; padding: 2px 8px; border-radius: 8px; }
+        .cat-label .status.filled { background: #1a3a1a; color: #6bff6b; }
+        .cat-label .status.empty { background: #2a2a4a; color: #666; }
+        #status-msg { text-align: center; padding: 10px; margin: 10px 0; border-radius: 8px; display: none; }
+        #status-msg.show { display: block; }
+        #status-msg.success { background: #1a3a1a; color: #6bff6b; }
+        #status-msg.info { background: #1a1a3a; color: #6baaff; }
+        .log-table { width: 100%; border-collapse: collapse; }
+        .log-table th, .log-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2a2a4a; font-size: 0.85em; }
+        .log-table th { color: #aaa; font-weight: 500; text-transform: uppercase; font-size: 0.75em; }
+        .empty { text-align: center; color: #666; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mon Profil IA</h1>
+        <nav style="text-align:center; margin-bottom:20px;">
+            <a href="/" style="color:#aaa; margin:0 15px; text-decoration:none;">Dashboard</a>
+            <a href="/profile" style="color:#ff6b6b; margin:0 15px; text-decoration:none; font-weight:600;">Mon Profil IA</a>
+        </nav>
+
+        <div id="status-msg"></div>
+
+        <div class="card">
+            <p style="color:#aaa;">Ce profil alimente l'IA pour generer des messages personnalises. Remplis les categories — l'IA les enrichit aussi a partir de tes messages manuels.</p>
+        </div>
+
+        <!-- Identity -->
+        <h2>Identite</h2>
+        <div class="card">
+            <div class="field-row">
+                <div><label>Pseudo</label><input type="text" id="pseudo"></div>
+                <div><label>Age</label><input type="text" id="age"></div>
+            </div>
+            <div class="field-row">
+                <div><label>Type de profil</label><input type="text" id="type"></div>
+                <div><label>Localisation</label><input type="text" id="location"></div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <h2>Description generale</h2>
+        <div class="card">
+            <label>Ta presentation (visible dans tous les prompts IA)</label>
+            <textarea id="description" rows="4"></textarea>
+        </div>
+
+        <!-- Knowledge Categories -->
+        <h2>Categories de connaissance</h2>
+        <div class="card">
+            <p style="color:#aaa; margin-bottom:15px;">Edite chaque categorie. L'IA les utilise pour personnaliser les messages et les enrichit a partir de tes echanges.</p>
+            <div id="categories"></div>
+            <div style="text-align:right; margin-top:15px;">
+                <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder tout</button>
+                <button class="btn btn-secondary" onclick="enrichWithAI()">Enrichir avec l'IA</button>
+            </div>
+        </div>
+
+        <!-- Messages History -->
+        <h2>Derniers messages envoyes</h2>
+        <div class="card">
+            <div id="messages-list"><div class="empty">Chargement...</div></div>
+        </div>
+    </div>
+
+    <script>
+        const CATEGORIES = [
+            {key: 'passions', name: 'Passions & centres d\'interet', placeholder: 'Ex: voyages, photo, cuisine asiatique, cinema...'},
+            {key: 'pratiques', name: 'Pratiques & preferences', placeholder: 'Ex: libertinage soft, echangisme, rencontres a 3...'},
+            {key: 'personnalite', name: 'Personnalite & caractere', placeholder: 'Ex: curieux, ouvert d\'esprit, respectueux, spontane...'},
+            {key: 'physique', name: 'Physique & apparence', placeholder: 'Ex: sportif, brun, 1m80, tatoue...'},
+            {key: 'etudes_metier', name: 'Etudes & metier', placeholder: 'Ex: consultant, entrepreneur, sciences po...'},
+            {key: 'voyages', name: 'Voyages & lieux', placeholder: 'Ex: Asie du Sud-Est, Maroc, NYC, baroudeur...'},
+            {key: 'musique_culture', name: 'Musique & culture', placeholder: 'Ex: jazz, techno, theatre, lectures...'},
+            {key: 'sport', name: 'Sport & activites', placeholder: 'Ex: running, yoga, escalade, surf...'},
+            {key: 'humour', name: 'Style d\'humour', placeholder: 'Ex: humour noir, blagues decalees, ironie bienveillante...'},
+            {key: 'valeurs', name: 'Valeurs & vision', placeholder: 'Ex: authenticite, respect mutuel, pas de prise de tete...'},
+        ];
+
+        function showMsg(text, type) {
+            const el = document.getElementById('status-msg');
+            el.textContent = text;
+            el.className = 'show ' + type;
+            setTimeout(() => el.className = '', 4000);
+        }
+
+        function renderCategories(data) {
+            const cats = data.categories || {};
+            let html = '';
+            for (const cat of CATEGORIES) {
+                const val = cats[cat.key] || '';
+                const statusClass = val.trim() ? 'filled' : 'empty';
+                const statusText = val.trim() ? 'rempli' : 'vide';
+                html += `<div class="cat-item">
+                    <div class="cat-label">
+                        <span class="name">${cat.name}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <textarea id="cat-${cat.key}" rows="2" placeholder="${cat.placeholder}">${val}</textarea>
+                </div>`;
+            }
+            document.getElementById('categories').innerHTML = html;
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/user-profile');
+                const data = await res.json();
+                const p = data.profile || {};
+                document.getElementById('pseudo').value = p.pseudo || '';
+                document.getElementById('age').value = p.age || '';
+                document.getElementById('type').value = p.type || '';
+                document.getElementById('location').value = p.location || '';
+                document.getElementById('description').value = p.description || '';
+                renderCategories(p);
+
+                const msgs = data.messages_sent || [];
+                if (msgs.length === 0) {
+                    document.getElementById('messages-list').innerHTML = '<div class="empty">Aucun message envoye</div>';
+                } else {
+                    let html = '<table class="log-table"><thead><tr><th>Date</th><th>Action</th><th>Destinataire</th><th>Message</th></tr></thead><tbody>';
+                    for (const m of msgs) {
+                        html += `<tr><td>${m.created_at || ''}</td><td>${m.action || ''}</td><td>${m.target_name || ''}</td><td>${(m.message_sent || '').substring(0, 100)}</td></tr>`;
+                    }
+                    html += '</tbody></table>';
+                    document.getElementById('messages-list').innerHTML = html;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function gatherProfileData() {
+            const categories = {};
+            for (const cat of CATEGORIES) {
+                categories[cat.key] = document.getElementById('cat-' + cat.key).value;
+            }
+            return {
+                pseudo: document.getElementById('pseudo').value,
+                age: document.getElementById('age').value,
+                type: document.getElementById('type').value,
+                location: document.getElementById('location').value,
+                description: document.getElementById('description').value,
+                categories,
+            };
+        }
+
+        async function saveProfile() {
+            try {
+                const res = await fetch('/api/user-profile', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(gatherProfileData())
+                });
+                const result = await res.json();
+                if (result.status === 'saved') {
+                    showMsg('Profil sauvegarde !', 'success');
+                    renderCategories(result.profile);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function enrichWithAI() {
+            showMsg('Enrichissement IA en cours...', 'info');
+            try {
+                const data = gatherProfileData();
+                const res = await fetch('/api/user-profile/enrich', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.status === 'enriched') {
+                    showMsg('Profil enrichi par l\'IA !', 'success');
+                    const p = result.profile;
+                    document.getElementById('description').value = p.description || '';
+                    renderCategories(p);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoostRencontre — Business Model Canvas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #E4406F;
+            --primary-dark: #C7335D;
+            --secondary: #6C5CE7;
+            --accent: #FF8A65;
+            --dark: #1A1A2E;
+            --dark-soft: #2D2D44;
+            --gray-100: #F8F9FA;
+            --gray-200: #E9ECEF;
+            --gray-500: #8E8E9A;
+            --white: #FFFFFF;
+            --gradient-warm: linear-gradient(135deg, #E4406F 0%, #FF6B95 100%);
+            --gradient-hero: linear-gradient(135deg, #E4406F 0%, #6C5CE7 50%, #4834D4 100%);
+            --shadow-sm: 0 2px 8px rgba(228, 64, 111, 0.08);
+            --shadow-md: 0 4px 20px rgba(228, 64, 111, 0.12);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--dark);
+            background: var(--gray-100);
+            line-height: 1.6;
+        }
+
+        /* NAV */
+        nav {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(228,64,111,0.08);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo span { font-weight: 400; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-soft);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover { background: rgba(228,64,111,0.06); color: var(--primary); }
+
+        /* HEADER */
+        .header {
+            background: var(--gradient-hero);
+            padding: 60px 24px 48px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            font-size: 17px;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* BMC GRID */
+        .bmc-container {
+            max-width: 1400px;
+            margin: -24px auto 40px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+        .bmc-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: auto auto auto;
+            gap: 12px;
+        }
+
+        .bmc-cell {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .bmc-cell:hover {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(228,64,111,0.15);
+        }
+        .bmc-cell::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .bmc-cell h3 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bmc-cell h3 .icon {
+            font-size: 18px;
+        }
+        .bmc-cell ul {
+            list-style: none;
+            padding: 0;
+        }
+        .bmc-cell li {
+            font-size: 13px;
+            color: var(--dark-soft);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--gray-100);
+            line-height: 1.5;
+        }
+        .bmc-cell li:last-child { border-bottom: none; }
+        .bmc-cell li strong {
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        /* Color coding per block */
+        .cell-partners::before { background: #6C5CE7; }
+        .cell-partners h3 { color: #6C5CE7; }
+
+        .cell-activities::before { background: #E4406F; }
+        .cell-activities h3 { color: #E4406F; }
+
+        .cell-resources::before { background: #FF6B6B; }
+        .cell-resources h3 { color: #FF6B6B; }
+
+        .cell-value::before { background: #00B894; }
+        .cell-value h3 { color: #00B894; }
+
+        .cell-relations::before { background: #FDCB6E; }
+        .cell-relations h3 { color: #D4A017; }
+
+        .cell-channels::before { background: #0984E3; }
+        .cell-channels h3 { color: #0984E3; }
+
+        .cell-segments::before { background: #E17055; }
+        .cell-segments h3 { color: #E17055; }
+
+        .cell-costs::before { background: #636E72; }
+        .cell-costs h3 { color: #636E72; }
+
+        .cell-revenue::before { background: #00B894; }
+        .cell-revenue h3 { color: #00B894; }
+
+        /* Grid placement */
+        .cell-partners   { grid-column: 1 / 3;  grid-row: 1 / 3; }
+        .cell-activities  { grid-column: 3 / 5;  grid-row: 1 / 2; }
+        .cell-resources   { grid-column: 3 / 5;  grid-row: 2 / 3; }
+        .cell-value       { grid-column: 5 / 7;  grid-row: 1 / 3; }
+        .cell-relations   { grid-column: 7 / 9;  grid-row: 1 / 2; }
+        .cell-channels    { grid-column: 7 / 9;  grid-row: 2 / 3; }
+        .cell-segments    { grid-column: 9 / 11; grid-row: 1 / 3; }
+        .cell-costs       { grid-column: 1 / 6;  grid-row: 3 / 4; }
+        .cell-revenue     { grid-column: 6 / 11; grid-row: 3 / 4; }
+
+        /* METRICS BAR */
+        .metrics-bar {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .metric-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            border: 1px solid var(--gray-200);
+        }
+        .metric-card .value {
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .metric-card .label {
+            font-size: 13px;
+            color: var(--gray-500);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* SWOT + ROADMAP */
+        .extras {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .extra-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 28px;
+            border: 1px solid var(--gray-200);
+        }
+        .extra-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .swot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .swot-item {
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+        }
+        .swot-item h4 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .swot-item ul { list-style: none; }
+        .swot-item li { padding: 3px 0; line-height: 1.5; }
+        .swot-s { background: rgba(0,184,148,0.08); }
+        .swot-s h4 { color: #00B894; }
+        .swot-w { background: rgba(255,107,107,0.08); }
+        .swot-w h4 { color: #FF6B6B; }
+        .swot-o { background: rgba(9,132,227,0.08); }
+        .swot-o h4 { color: #0984E3; }
+        .swot-t { background: rgba(99,110,114,0.08); }
+        .swot-t h4 { color: #636E72; }
+
+        .roadmap-list {
+            list-style: none;
+        }
+        .roadmap-list li {
+            display: flex;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 14px;
+        }
+        .roadmap-list li:last-child { border-bottom: none; }
+        .phase-badge {
+            flex-shrink: 0;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .phase-1 { background: rgba(0,184,148,0.1); color: #00B894; }
+        .phase-2 { background: rgba(9,132,227,0.1); color: #0984E3; }
+        .phase-3 { background: rgba(108,92,231,0.1); color: #6C5CE7; }
+        .phase-4 { background: rgba(228,64,111,0.1); color: #E4406F; }
+
+        /* PRICING */
+        .pricing-section {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 24px;
+        }
+        .pricing-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .pricing-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px 24px;
+            border: 1px solid var(--gray-200);
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .pricing-card.featured {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+        .pricing-card.featured::before {
+            content: 'Populaire';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-warm);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 16px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pricing-card h4 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .pricing-card .price {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 12px 0;
+        }
+        .pricing-card .price span {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gray-500);
+        }
+        .pricing-card .desc {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 20px;
+        }
+        .pricing-card ul {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+        .pricing-card li {
+            font-size: 13px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pricing-card li::before {
+            content: '\2713';
+            color: #00B894;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .pricing-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+            cursor: pointer;
+        }
+        .pricing-card.featured .pricing-btn {
+            background: var(--gradient-warm);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* FOOTER */
+        footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.5);
+            padding: 32px 24px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .bmc-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto;
+            }
+            .cell-partners   { grid-column: 1 / 2; grid-row: auto; }
+            .cell-activities  { grid-column: 2 / 3; grid-row: auto; }
+            .cell-resources   { grid-column: 1 / 2; grid-row: auto; }
+            .cell-value       { grid-column: 2 / 3; grid-row: auto; }
+            .cell-relations   { grid-column: 1 / 2; grid-row: auto; }
+            .cell-channels    { grid-column: 2 / 3; grid-row: auto; }
+            .cell-segments    { grid-column: 1 / 3; grid-row: auto; }
+            .cell-costs       { grid-column: 1 / 3; grid-row: auto; }
+            .cell-revenue     { grid-column: 1 / 3; grid-row: auto; }
+            .extras { grid-template-columns: 1fr; }
+            .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .bmc-grid { grid-template-columns: 1fr; }
+            .cell-segments { grid-column: auto; }
+            .cell-costs { grid-column: auto; }
+            .cell-revenue { grid-column: auto; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .metrics-bar { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">Boost<span>Rencontre</span></div>
+    <div class="nav-links">
+        <a href="/home">Accueil</a>
+        <a href="/">Dashboard</a>
+        <a href="/profile">Profil</a>
+    </div>
+</nav>
+
+<div class="header">
+    <h1>Business Model Canvas</h1>
+    <p>Vision strategique de BoostRencontre — Assistant IA pour les rencontres libertines</p>
+</div>
+
+<!-- KPI Metrics -->
+<div class="metrics-bar">
+    <div class="metric-card">
+        <div class="value">3</div>
+        <div class="label">Plateformes supportees</div>
+    </div>
+    <div class="metric-card">
+        <div class="value">9.90&#8364;</div>
+        <div class="label">Prix d'entree / mois</div>
+    </div>
+    <div class="metric-card">
+        <div class="value">x5</div>
+        <div class="label">Taux de reponse vs manuel</div>
+    </div>
+    <div class="metric-card">
+        <div class="value">85%</div>
+        <div class="label">Marge brute cible</div>
+    </div>
+</div>
+
+<!-- BMC Grid -->
+<div class="bmc-container">
+    <div class="bmc-grid">
+
+        <!-- Partenaires cles -->
+        <div class="bmc-cell cell-partners">
+            <h3><span class="icon">&#129309;</span> Partenaires cles</h3>
+            <ul>
+                <li><strong>OpenAI</strong> — API GPT-4o-mini pour la generation de messages personnalises</li>
+                <li><strong>Playwright / Microsoft</strong> — Framework d'automatisation navigateur</li>
+                <li><strong>Sites de rencontres</strong> — Wyylde, Tinder, Meetic (plateformes cibles)</li>
+                <li><strong>Hebergeurs cloud</strong> — VPS pour l'execution 24/7 des bots</li>
+                <li><strong>Communautes libertines</strong> — Forums, groupes, influenceurs du milieu</li>
+                <li><strong>Stripe / PayPal</strong> — Traitement des paiements abonnements</li>
+            </ul>
+        </div>
+
+        <!-- Activites cles -->
+        <div class="bmc-cell cell-activities">
+            <h3><span class="icon">&#9881;</span> Activites cles</h3>
+            <ul>
+                <li><strong>R&D IA</strong> — Optimisation continue des prompts et styles de messages</li>
+                <li><strong>Maintenance selectors</strong> — Mise a jour des selectors CSS quand les sites changent</li>
+                <li><strong>Anti-detection</strong> — Strategies pour eviter les bans (delais, fingerprinting)</li>
+                <li><strong>Ajout de plateformes</strong> — Expansion vers de nouveaux sites</li>
+                <li><strong>Support utilisateurs</strong> — Onboarding, configuration profil IA</li>
+            </ul>
+        </div>
+
+        <!-- Ressources cles -->
+        <div class="bmc-cell cell-resources">
+            <h3><span class="icon">&#128171;</span> Ressources cles</h3>
+            <ul>
+                <li><strong>Moteur IA</strong> — 8 styles de communication, 9 categories d'envies, 13+ templates</li>
+                <li><strong>Profil IA 10 facettes</strong> — Personnalisation poussee de la personnalite</li>
+                <li><strong>Bot Playwright</strong> — Navigation automatisee multi-plateformes</li>
+                <li><strong>Dashboard FastAPI</strong> — Interface de pilotage en temps reel</li>
+                <li><strong>Base de donnees</strong> — Templates, profils, logs d'activite</li>
+            </ul>
+        </div>
+
+        <!-- Proposition de valeur -->
+        <div class="bmc-cell cell-value">
+            <h3><span class="icon">&#128142;</span> Proposition de valeur</h3>
+            <ul>
+                <li><strong>Messages ultra-personnalises</strong> — Chaque message est unique, adapte au profil cible et a votre personnalite</li>
+                <li><strong>Gain de temps massif</strong> — Automatisation des actions repetitives (likes, messages, reponses)</li>
+                <li><strong>Taux de reponse x5</strong> — Messages IA > messages generiques copier-coller</li>
+                <li><strong>Multi-plateforme</strong> — Un seul outil pour Wyylde, Tinder, Meetic</li>
+                <li><strong>Profil IA riche</strong> — 10 facettes de personnalite pour des messages authentiques</li>
+                <li><strong>Auto-reponse intelligente</strong> — L'IA maintient les conversations en votre absence</li>
+                <li><strong>Respect des codes</strong> — Tu/Vous automatique, styles adaptes au contexte libertin</li>
+            </ul>
+        </div>
+
+        <!-- Relations clients -->
+        <div class="bmc-cell cell-relations">
+            <h3><span class="icon">&#128172;</span> Relations clients</h3>
+            <ul>
+                <li><strong>Self-service</strong> — Dashboard intuitif, configuration guidee</li>
+                <li><strong>Onboarding assiste</strong> — Setup initial du profil IA avec enrichissement auto</li>
+                <li><strong>Communaute</strong> — Partage de templates et strategies entre utilisateurs</li>
+                <li><strong>Support Discord/Telegram</strong> — Aide rapide et retours terrain</li>
+                <li><strong>Tutoriels video</strong> — Guides pour chaque fonctionnalite</li>
+            </ul>
+        </div>
+
+        <!-- Canaux -->
+        <div class="bmc-cell cell-channels">
+            <h3><span class="icon">&#128225;</span> Canaux</h3>
+            <ul>
+                <li><strong>SEO</strong> — Blog "conseils rencontres libertines", comparatifs sites</li>
+                <li><strong>Forums libertins</strong> — Wyylde forum, JOYclub, libertinage.com</li>
+                <li><strong>Reseaux sociaux</strong> — Twitter/X, Reddit r/libertinage</li>
+                <li><strong>Bouche-a-oreille</strong> — Programme de parrainage (1 mois offert)</li>
+                <li><strong>Affiliation</strong> — Partenariats blogueurs lifestyle/dating</li>
+            </ul>
+        </div>
+
+        <!-- Segments clients -->
+        <div class="bmc-cell cell-segments">
+            <h3><span class="icon">&#128101;</span> Segments clients</h3>
+            <ul>
+                <li><strong>Couples libertins</strong> — Recherchent des plans echangisme, gang bang, pluralite. Ont peu de temps pour envoyer des messages individuels.</li>
+                <li><strong>Hommes seuls (bi/hetero)</strong> — Volume de messages necessaire eleve, faible taux de reponse naturel. Besoin d'un avantage competitif.</li>
+                <li><strong>Femmes curieuses</strong> — Souhaitent filtrer et engager des conversations de qualite, pas des "salut ca va".</li>
+                <li><strong>Nouveaux libertins</strong> — Ne savent pas comment aborder, quoi dire, quel ton adopter. L'IA les guide.</li>
+                <li><strong>Profils premium</strong> — Utilisateurs actifs sur 2-3 plateformes simultanement, cherchent un outil unifie.</li>
+            </ul>
+        </div>
+
+        <!-- Structure de couts -->
+        <div class="bmc-cell cell-costs">
+            <h3><span class="icon">&#128176;</span> Structure de couts</h3>
+            <ul>
+                <li><strong>API OpenAI</strong> — ~0.15&#8364;/1000 messages (gpt-4o-mini) = ~2&#8364;/utilisateur/mois</li>
+                <li><strong>Infrastructure</strong> — VPS pour bots Playwright : ~20-50&#8364;/mois par tranche de 50 users</li>
+                <li><strong>Developpement</strong> — Maintenance selectors, nouvelles plateformes, features</li>
+                <li><strong>Support client</strong> — Community manager, support technique</li>
+                <li><strong>Marketing</strong> — SEO, contenu, affiliation : ~500&#8364;/mois phase lancement</li>
+                <li><strong>Cout marginal / user</strong> — ~2-3&#8364;/mois (IA + compute) = marge 70-85%</li>
+            </ul>
+        </div>
+
+        <!-- Sources de revenus -->
+        <div class="bmc-cell cell-revenue">
+            <h3><span class="icon">&#128178;</span> Sources de revenus</h3>
+            <ul>
+                <li><strong>Abonnement Starter</strong> — 9.90&#8364;/mois : 1 plateforme, 50 messages/jour, 3 styles</li>
+                <li><strong>Abonnement Pro</strong> — 19.90&#8364;/mois : 3 plateformes, illimite, tous styles + auto-reply</li>
+                <li><strong>Abonnement VIP</strong> — 39.90&#8364;/mois : Pro + templates custom + profil IA premium + priorite</li>
+                <li><strong>Pack templates</strong> — 4.90&#8364; one-shot : packs thematiques (BDSM expert, seduction couple, etc.)</li>
+                <li><strong>Affiliation</strong> — Commission sur inscriptions aux sites de rencontres partenaires</li>
+                <li><strong>Objectif Y1</strong> — 200 abonnes x 19.90&#8364; = ~4000&#8364; MRR</li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<!-- SWOT + Roadmap -->
+<div class="extras">
+    <div class="extra-card">
+        <h3>&#9878; Analyse SWOT</h3>
+        <div class="swot-grid">
+            <div class="swot-item swot-s">
+                <h4>Forces</h4>
+                <ul>
+                    <li>IA personnalisee (pas du copier-coller)</li>
+                    <li>Multi-plateforme unifie</li>
+                    <li>10 facettes de profil = authenticite</li>
+                    <li>Auto-reply maintient les conversations</li>
+                    <li>Cout marginal tres faible</li>
+                </ul>
+            </div>
+            <div class="swot-item swot-w">
+                <h4>Faiblesses</h4>
+                <ul>
+                    <li>Dependance aux selectors CSS (fragile)</li>
+                    <li>Risque de ban par les plateformes</li>
+                    <li>Necessite un navigateur ouvert</li>
+                    <li>Ethique discutable (automatisation)</li>
+                    <li>Pas d'app mobile native</li>
+                </ul>
+            </div>
+            <div class="swot-item swot-o">
+                <h4>Opportunites</h4>
+                <ul>
+                    <li>Marche libertin en croissance</li>
+                    <li>Extension vers dating mainstream</li>
+                    <li>API officielles des plateformes</li>
+                    <li>Version SaaS cloud (pas de setup local)</li>
+                    <li>White-label pour coachs en seduction</li>
+                </ul>
+            </div>
+            <div class="swot-item swot-t">
+                <h4>Menaces</h4>
+                <ul>
+                    <li>Les sites renforcent la detection de bots</li>
+                    <li>Concurrents (AutoSwipe, etc.)</li>
+                    <li>Changements CGU des plateformes</li>
+                    <li>Regulation IA / RGPD</li>
+                    <li>Mauvaise presse (bots sur dating)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="extra-card">
+        <h3>&#128640; Roadmap produit</h3>
+        <ul class="roadmap-list">
+            <li>
+                <span class="phase-badge phase-1">Phase 1</span>
+                <div><strong>MVP valide</strong> — Wyylde fonctionnel, dashboard, 9 envies, 8 styles, profil IA 10 facettes. Beta privee 20 users.</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-1">Phase 1</span>
+                <div><strong>Monetisation</strong> — Mise en place des 3 plans tarifaires, Stripe, landing page de conversion.</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-2">Phase 2</span>
+                <div><strong>Multi-plateforme</strong> — Activation complete Tinder + Meetic. Selectors et workflows specifiques.</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-2">Phase 2</span>
+                <div><strong>Analytics</strong> — Tableau de bord stats : taux de reponse, meilleures heures, styles les plus efficaces.</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-3">Phase 3</span>
+                <div><strong>SaaS Cloud</strong> — Version hebergee, plus besoin de setup local. Navigateurs dans le cloud (Browserless).</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-3">Phase 3</span>
+                <div><strong>Marketplace templates</strong> — Les utilisateurs partagent/vendent leurs templates d'approche.</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-4">Phase 4</span>
+                <div><strong>IA avancee</strong> — Apprentissage des reponses qui fonctionnent, adaptation automatique du style par profil cible.</div>
+            </li>
+            <li>
+                <span class="phase-badge phase-4">Phase 4</span>
+                <div><strong>App mobile</strong> — Notifications, pilotage a distance, stats en temps reel.</div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Pricing -->
+<div class="pricing-section">
+    <h3>Grille tarifaire envisagee</h3>
+    <div class="pricing-grid">
+        <div class="pricing-card">
+            <h4>Starter</h4>
+            <div class="price">9.90&#8364;<span>/mois</span></div>
+            <div class="desc">Pour debuter sur une plateforme</div>
+            <ul>
+                <li>1 plateforme au choix</li>
+                <li>50 messages IA / jour</li>
+                <li>3 styles de communication</li>
+                <li>Profil IA basique (5 facettes)</li>
+                <li>Templates par defaut</li>
+            </ul>
+            <button class="pricing-btn">Choisir Starter</button>
+        </div>
+        <div class="pricing-card featured">
+            <h4>Pro</h4>
+            <div class="price">19.90&#8364;<span>/mois</span></div>
+            <div class="desc">Multi-plateforme et auto-reply</div>
+            <ul>
+                <li>3 plateformes</li>
+                <li>Messages illimites</li>
+                <li>8 styles de communication</li>
+                <li>Profil IA complet (10 facettes)</li>
+                <li>Auto-reply intelligent</li>
+                <li>9 categories d'envies</li>
+            </ul>
+            <button class="pricing-btn">Choisir Pro</button>
+        </div>
+        <div class="pricing-card">
+            <h4>VIP</h4>
+            <div class="price">39.90&#8364;<span>/mois</span></div>
+            <div class="desc">Le maximum de puissance</div>
+            <ul>
+                <li>Tout Pro inclus</li>
+                <li>Templates custom illimites</li>
+                <li>Enrichissement IA auto du profil</li>
+                <li>Analytics avances</li>
+                <li>Support prioritaire</li>
+                <li>Acces beta nouvelles features</li>
+            </ul>
+            <button class="pricing-btn">Choisir VIP</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    BoostRencontre — Business Model Canvas — Document strategique interne
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+# Environment and secrets
+.env
+.env.*
+*.key
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Browser profiles (contain cookies and session data)
+browser_profiles/
+
+# Playwright
+test-results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+/tmp/
+*.png
+*.log
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
