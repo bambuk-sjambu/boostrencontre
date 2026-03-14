@@ -2,6 +2,8 @@
 
 #boostrencontre #roadmap #suivi
 
+> **GitHub Project**: [Kanban Board](https://github.com/users/bambuk-sjambu/projects/4) | [Issues](https://github.com/bambuk-sjambu/boostrencontre/issues)
+
 ---
 
 ## Fait

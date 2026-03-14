@@ -30,6 +30,7 @@
 - [[05-Suivi/roadmap|Roadmap]] -- Fait, en cours, planifie
 - [[05-Suivi/changelog|Changelog]] -- Journal des changements
 - [[05-Suivi/decisions|Decisions techniques]] -- Choix architecturaux
+- [[05-Suivi/github-project|GitHub Project]] -- Issues & Kanban board
 
 ## Communication
 - [[06-Communication/pitch|Pitch commercial]] -- Presentation 1 page
