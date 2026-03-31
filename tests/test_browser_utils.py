@@ -119,8 +119,8 @@ async def test_type_in_editor_clicks_and_types():
         await type_in_editor(page, editor_pos, "Hello test message")
 
     page.mouse.click.assert_called_once_with(400, 300)
-    # _human_type calls keyboard.press per character
-    assert page.keyboard.press.call_count == len("Hello test message")
+    # _human_type calls keyboard.type(char, delay=0) per character
+    assert page.keyboard.type.call_count == len("Hello test message")
 
 
 # ─── send_message_in_editor ───

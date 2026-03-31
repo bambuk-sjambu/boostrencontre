@@ -74,7 +74,7 @@ async def run_likes(platform: str, request: Request):
         return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte. Ouvre le navigateur d'abord."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
-        return {"error": "not_logged_in", "message": f"Tu n'es pas connecte sur {platform}. Connecte-toi dans le navigateur ouvert."}
+        return JSONResponse(status_code=401, content={"error": "not_logged_in", "message": f"Non connecte sur {platform}. Connecte-toi dans le navigateur."})
     profile_filter = ""
     try:
         body = await request.json()
@@ -98,7 +98,7 @@ async def run_messages(platform: str, request: Request):
         return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte. Ouvre le navigateur d'abord."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
-        return {"error": "not_logged_in", "message": f"Tu n'es pas connecte sur {platform}. Connecte-toi dans le navigateur ouvert."}
+        return JSONResponse(status_code=401, content={"error": "not_logged_in", "message": f"Non connecte sur {platform}. Connecte-toi dans le navigateur."})
     style = "auto"
     try:
         body = await request.json()
@@ -123,7 +123,7 @@ async def run_replies(platform: str, request: Request):
         return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
-        return {"error": "not_logged_in", "message": f"Non connecte sur {platform}."}
+        return JSONResponse(status_code=401, content={"error": "not_logged_in", "message": f"Non connecte sur {platform}."})
     style = "auto"
     try:
         body = await request.json()
@@ -148,7 +148,7 @@ async def message_discussions(platform: str, request: Request):
         return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
-        return {"error": "not_logged_in", "message": f"Non connecte sur {platform}."}
+        return JSONResponse(status_code=401, content={"error": "not_logged_in", "message": f"Non connecte sur {platform}."})
     count = 5
     style = "auto"
     try:
@@ -175,7 +175,7 @@ async def message_search(platform: str, request: Request):
         return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
-        return {"error": "not_logged_in", "message": f"Non connecte sur {platform}."}
+        return JSONResponse(status_code=401, content={"error": "not_logged_in", "message": f"Non connecte sur {platform}."})
     count = 5
     style = "auto"
     profile_type = ""

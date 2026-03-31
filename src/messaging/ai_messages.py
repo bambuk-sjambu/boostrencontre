@@ -335,7 +335,7 @@ async def generate_reply_message(
         if location:
             profile_section += f"\n- Localisation : {location}"
         if bio and len(bio) > 10:
-            profile_section += f"\n- Presentation : \"{bio[:500]}\""
+            profile_section += f"\n- Presentation : \"{_sanitize_prompt_input(bio, max_len=500)}\""
         if "couple" in ptype.lower():
             tutoiement = "VOUVOIE (c'est un couple, dis 'vous', 'votre', etc.)"
         else:

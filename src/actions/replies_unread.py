@@ -420,6 +420,12 @@ async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> li
     if not session:
         return []
 
+    # Check daily rate limit before starting
+    allowed, current, limit = await check_daily_limit(platform_name, "replies")
+    if not allowed:
+        logger.warning(f"Daily reply limit reached ({current}/{limit}) for {platform_name}, aborting")
+        return []
+
     platform = session["platform"]
     my_pseudo = MY_PROFILE.get("pseudo", "ilvousenprie").lower()
     replied = []
@@ -734,6 +740,32 @@ async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> li
                 await asyncio.sleep(0.3)
                 continue
 
+            # Check rejection and rate limits before generating reply
+            if await _is_rejected(platform_name, name):
+                logger.info(f"  [{name}] Previously rejected, skipping")
+                await platform.page.keyboard.press("Escape")
+                await asyncio.sleep(0.3)
+                continue
+
+            if check_rejection(chat_content):
+                logger.info(f"  [{name}] Rejection detected in chat, logging and skipping")
+                await _log_rejection(platform_name, name)
+                await platform.page.keyboard.press("Escape")
+                await asyncio.sleep(0.3)
+                continue
+
+            if await _replied_recently(platform_name, name):
+                logger.info(f"  [{name}] Already replied recently, skipping")
+                await platform.page.keyboard.press("Escape")
+                await asyncio.sleep(0.3)
+                continue
+
+            # Re-check daily limit mid-loop
+            allowed, _, _ = await check_daily_limit(platform_name, "replies")
+            if not allowed:
+                logger.warning("Daily reply limit reached, stopping")
+                break
+
             # Explore profile in new tab
             profile_info = {}
             if disc.get("typeInfo"):
@@ -810,8 +842,15 @@ async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> li
             iname = conv["name"]
             if iname.lower() == my_pseudo:
                 continue
+            if await _is_rejected(platform_name, iname):
+                continue
             if await _replied_recently(platform_name, iname, minutes=3):
                 continue
+            # Re-check rate limit
+            allowed, _, _ = await check_daily_limit(platform_name, "replies")
+            if not allowed:
+                logger.warning("Daily reply limit reached, stopping inbox scan")
+                break
 
             try:
                 await platform.page.evaluate("""(targetName) => {
@@ -830,6 +869,14 @@ async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> li
                     continue
 
                 chat_content = chat_data["text"]
+
+                if check_rejection(chat_content):
+                    logger.info(f"  [{iname}] Rejection detected in inbox chat, skipping")
+                    await _log_rejection(platform_name, iname)
+                    await platform.page.goto("https://app.wyylde.com/fr-fr/mailbox/inbox", timeout=10000)
+                    await asyncio.sleep(1)
+                    continue
+
                 profile_info = await explore_profile_in_new_tab(session["context"], platform.page, iname)
 
                 # Record received message in conversation history

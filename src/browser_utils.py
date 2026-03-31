@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 async def _human_type(page, message: str):
     """Type message with human-like variable delays between keystrokes."""
-    for i, char in enumerate(message):
-        await page.keyboard.press(char if len(char) == 1 else char)
+    for char in message:
+        await page.keyboard.type(char, delay=0)
         # Base delay 20-70ms with occasional micro-pauses at word boundaries
         delay = random.uniform(0.020, 0.070)
         if char == " " and random.random() < 0.3:

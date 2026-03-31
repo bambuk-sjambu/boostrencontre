@@ -612,6 +612,13 @@
             }
         }
 
+        function esc(s) {
+            if (s == null) return '';
+            const d = document.createElement('div');
+            d.textContent = String(s);
+            return d.innerHTML;
+        }
+
         async function openBrowser(platform) {
             showMsg('Ouverture de ' + platform + '...', 'info');
             document.getElementById('status-' + platform).textContent = 'Ouverture...';
@@ -922,7 +929,7 @@
                 r.by_style.forEach((s, i) => {
                     const tr = document.createElement('tr');
                     if (i === 0 && s.rate > 0) tr.className = 'style-best';
-                    tr.innerHTML = '<td>' + s.style + '</td>'
+                    tr.innerHTML = '<td>' + esc(s.style) + '</td>'
                         + '<td>' + s.sent + '</td>'
                         + '<td>' + s.responses + '</td>'
                         + '<td class="' + rateClass(s.rate) + '">' + s.rate + '%</td>';
@@ -969,12 +976,12 @@
             for (const p of r.top_profiles) {
                 const tr = document.createElement('tr');
                 const badgeClass = 'score-' + p.grade;
-                tr.innerHTML = '<td>' + p.target_name + '</td>'
-                    + '<td>' + (p.target_type || '-') + '</td>'
+                tr.innerHTML = '<td>' + esc(p.target_name) + '</td>'
+                    + '<td>' + esc(p.target_type || '-') + '</td>'
                     + '<td><span class="score-badge ' + badgeClass + '">' + p.score + '</span></td>'
                     + '<td><span class="score-badge ' + badgeClass + '">' + p.grade + '</span></td>'
-                    + '<td>' + (p.recommendation || '-') + '</td>'
-                    + '<td>' + (p.suggested_style || '-') + '</td>';
+                    + '<td>' + esc(p.recommendation || '-') + '</td>'
+                    + '<td>' + esc(p.suggested_style || '-') + '</td>';
                 tbody.appendChild(tr);
             }
         }
@@ -1020,9 +1027,9 @@
                 const stageColor = _stageColors[c.stage] || '#666';
                 const dirIcon = c.last_direction === 'sent' ? '&#8594; ' : '&#8592; ';
                 const dateStr = c.last_at ? c.last_at.replace('T', ' ').slice(0, 16) : '-';
-                const msgPreview = c.last_message ? (dirIcon + c.last_message) : '-';
+                const msgPreview = c.last_message ? (dirIcon + esc(c.last_message)) : '-';
                 html += '<tr>'
-                    + '<td style="font-weight:600;">' + c.contact_name + '</td>'
+                    + '<td style="font-weight:600;">' + esc(c.contact_name) + '</td>'
                     + '<td><span class="badge" style="background:' + stageColor + '22; color:' + stageColor + ';">' + stageLabel + '</span></td>'
                     + '<td>' + c.turn_count + '</td>'
                     + '<td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#aaa; font-size:0.85em;">' + msgPreview + '</td>'
@@ -1100,8 +1107,8 @@
                 }
                 html += '<div class="campaign-item" style="flex-wrap:wrap;">'
                     + '<div class="campaign-info">'
-                    + '<div class="campaign-name">' + c.name + ' <span class="badge ' + badgeClass + '">' + c.status + '</span></div>'
-                    + '<div class="campaign-meta">' + c.platform + ' | ' + (c.target_type || 'Tous') + ' | Style: ' + (c.style || 'auto') + ' | ' + c.contacts_done + '/' + c.max_contacts + ' contacts</div>'
+                    + '<div class="campaign-name">' + esc(c.name) + ' <span class="badge ' + badgeClass + '">' + esc(c.status) + '</span></div>'
+                    + '<div class="campaign-meta">' + esc(c.platform) + ' | ' + esc(c.target_type || 'Tous') + ' | Style: ' + esc(c.style || 'auto') + ' | ' + c.contacts_done + '/' + c.max_contacts + ' contacts</div>'
                     + miniStats
                     + '</div>'
                     + '<div class="campaign-progress"><div class="progress-bar"><div class="progress-fill" style="width:' + Math.min(pct, 100) + '%"></div></div></div>'
@@ -1169,7 +1176,7 @@
             for (const f of s.funnel) {
                 const w = Math.round((f.count / maxFunnel) * 100);
                 funnelHtml += '<div class="funnel-bar">'
-                    + '<div class="funnel-label">' + f.stage + '</div>'
+                    + '<div class="funnel-label">' + esc(f.stage) + '</div>'
                     + '<div class="funnel-track"><div class="funnel-fill ' + (funnelColors[f.stage] || '') + '" style="width:' + Math.max(w, 2) + '%"></div></div>'
                     + '<div class="funnel-count">' + f.count + ' (' + f.rate + ')</div>'
                     + '</div>';
@@ -1184,11 +1191,11 @@
                 let thtml = '<table class="contact-table"><thead><tr><th>Pseudo</th><th>Type</th><th>Age</th><th>Score</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
                 for (const ct of contacts) {
                     const statusBadge = 'badge-' + (ct.status === 'pending' ? 'draft' : ct.status === 'contacted' ? 'active' : ct.status === 'replied' || ct.status === 'conversation' ? 'paused' : ct.status === 'met' ? 'completed' : 'draft');
-                    thtml += '<tr><td>' + ct.contact_name + '</td>'
-                        + '<td>' + (ct.contact_type || '-') + '</td>'
-                        + '<td>' + (ct.contact_age || '-') + '</td>'
+                    thtml += '<tr><td>' + esc(ct.contact_name) + '</td>'
+                        + '<td>' + esc(ct.contact_type || '-') + '</td>'
+                        + '<td>' + esc(ct.contact_age || '-') + '</td>'
                         + '<td>' + (ct.score != null ? ct.score : '-') + '</td>'
-                        + '<td><span class="badge ' + statusBadge + '">' + ct.status + '</span></td>'
+                        + '<td><span class="badge ' + statusBadge + '">' + esc(ct.status) + '</span></td>'
                         + '<td><select onchange="updateContactStatus(' + ct.id + ',this.value,' + id + ')" style="padding:3px;background:#0f0f1a;border:1px solid #3a3a5a;border-radius:4px;color:#e0e0e0;font-size:0.8em;">'
                         + '<option value="">--</option>'
                         + '<option value="pending">pending</option>'

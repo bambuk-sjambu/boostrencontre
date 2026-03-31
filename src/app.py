@@ -114,8 +114,12 @@ async def security_middleware(request: Request, call_next):
     # Body size limit for POST/PUT/PATCH
     if request.method in ("POST", "PUT", "PATCH"):
         content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > MAX_BODY_SIZE:
-            return JSONResponse(status_code=413, content={"error": "body_too_large"})
+        if content_length:
+            try:
+                if int(content_length) > MAX_BODY_SIZE:
+                    return JSONResponse(status_code=413, content={"error": "body_too_large"})
+            except (ValueError, TypeError):
+                return JSONResponse(status_code=400, content={"error": "invalid_content_length"})
 
     response: Response = await call_next(request)
 

@@ -118,7 +118,7 @@ class TinderPlatform(BasePlatform):
         try:
             popup_selectors = [
                 '[class*="matchAnimation"] button',
-                'button[title*"Back"]',
+                'button[title*="Back"]',
                 'button[aria-label*="Back"]',
                 '[class*="modal"] button[class*="close"]',
             ]
