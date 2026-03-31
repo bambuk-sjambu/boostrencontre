@@ -648,7 +648,7 @@ async def test_message_flow(platform: str):
         await page.mouse.click(cx, cy)
         await aio.sleep(0.5)
         test_msg = "Test message debug"
-        await page.keyboard.type(test_msg, delay=25)
+        await page.keyboard.type(test_msg, delay=30)
         await aio.sleep(1)
         await page.screenshot(path="/tmp/msg_step5_typed.png")
         steps.append("5b. Typed test message")

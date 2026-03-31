@@ -1,7 +1,21 @@
 import asyncio
 import logging
+import random
 
 logger = logging.getLogger(__name__)
+
+
+async def _human_type(page, message: str):
+    """Type message with human-like variable delays between keystrokes."""
+    for i, char in enumerate(message):
+        await page.keyboard.press(char if len(char) == 1 else char)
+        # Base delay 20-70ms with occasional micro-pauses at word boundaries
+        delay = random.uniform(0.020, 0.070)
+        if char == " " and random.random() < 0.3:
+            delay += random.uniform(0.05, 0.20)  # word boundary pause
+        elif char in ".,!?" and random.random() < 0.5:
+            delay += random.uniform(0.10, 0.30)  # punctuation pause
+        await asyncio.sleep(delay)
 
 
 async def _safe_goto(page, url, timeout=30000):
@@ -72,7 +86,7 @@ async def type_in_editor(page, editor_pos, message):
     """Click on editor at given position and type message."""
     await page.mouse.click(editor_pos["x"], editor_pos["y"])
     await asyncio.sleep(0.5)
-    await page.keyboard.type(message, delay=25)
+    await _human_type(page, message)
     await asyncio.sleep(1)
 
 

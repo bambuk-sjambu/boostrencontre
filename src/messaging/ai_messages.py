@@ -77,7 +77,8 @@ _BAD_PATTERNS = [
 
 def _sanitize_prompt_input(text: str, max_len: int = 800) -> str:
     """Strip potential prompt injection markers from user-controlled text."""
-    text = text[:max_len]
+    if len(text) > max_len:
+        text = text[-max_len:]  # keep the most recent content
     text = text.replace('"""', '').replace("'''", "")
     text = re.sub(
         r'(?i)(ignore|forget|disregard)\s+(all\s+)?(previous|above|prior)\s+(instructions?|context|rules?)',

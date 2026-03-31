@@ -8,6 +8,7 @@ and shared send button utility.
 import asyncio
 import logging
 
+from ...browser_utils import _human_type
 from .selectors import (
     LUI_ECRIRE_ICON,
     SEND_ICON,
@@ -74,7 +75,7 @@ class WyyldeMessagingMixin:
             await asyncio.sleep(0.5)
 
             # Type the message
-            await self.page.keyboard.type(message, delay=25)
+            await _human_type(self.page, message)
             await asyncio.sleep(1)
 
             # Verify text was typed
@@ -191,7 +192,7 @@ class WyyldeMessagingMixin:
 
             await self.page.mouse.click(editor_pos["x"], editor_pos["y"])
             await asyncio.sleep(0.5)
-            await self.page.keyboard.type(message, delay=25)
+            await _human_type(self.page, message)
             await asyncio.sleep(1)
 
             sent = await self._click_send_button()
@@ -240,7 +241,7 @@ class WyyldeMessagingMixin:
 
             await self.page.mouse.click(editor_pos["x"], editor_pos["y"])
             await asyncio.sleep(0.5)
-            await self.page.keyboard.type(message, delay=25)
+            await _human_type(self.page, message)
             await asyncio.sleep(1)
 
             sent = await self._click_send_button()

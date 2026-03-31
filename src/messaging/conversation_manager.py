@@ -39,16 +39,25 @@ STAGES = {
     "proposition": {
         "description": "Proposer une rencontre ou un echange plus intime",
         "max_turns": 2,
-        "next": None,
+        "next": "cloture",
         "prompt_addon": (
             "Le moment est venu de proposer quelque chose de concret : une rencontre, "
             "un verre, un echange plus intime. Sois naturel, pas pressant."
         ),
     },
+    "cloture": {
+        "description": "Conversation terminee — proposition faite, attendre une reponse",
+        "max_turns": 0,
+        "next": None,
+        "prompt_addon": (
+            "Tu as deja propose une rencontre. Ne relance pas. "
+            "Si la personne repond, sois naturel et confirme les details."
+        ),
+    },
 }
 
 # Ordered list for stage progression
-_STAGE_ORDER = ["accroche", "interet", "approfondissement", "proposition"]
+_STAGE_ORDER = ["accroche", "interet", "approfondissement", "proposition", "cloture"]
 
 # Keywords that indicate strong interest (used for stage transition)
 _INTEREST_SIGNALS = [
