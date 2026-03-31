@@ -8,7 +8,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from .. import bot_engine
+from ..messaging.ai_messages import STYLES
 from .deps import validate_platform
+
+
+def _validated_style(raw: str) -> str:
+    """Return *raw* if it is a known style key, otherwise fall back to 'auto'."""
+    return raw if raw in STYLES else "auto"
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +108,7 @@ async def run_messages(platform: str, request: Request):
     style = "auto"
     try:
         body = await request.json()
-        style = body.get("style", "auto")
+        style = _validated_style(body.get("style", "auto"))
     except Exception:
         pass
     job_key = f"messages_{platform}"
@@ -127,7 +133,7 @@ async def run_replies(platform: str, request: Request):
     style = "auto"
     try:
         body = await request.json()
-        style = body.get("style", "auto")
+        style = _validated_style(body.get("style", "auto"))
     except Exception:
         pass
     job_key = f"replies_{platform}"
@@ -153,8 +159,8 @@ async def message_discussions(platform: str, request: Request):
     style = "auto"
     try:
         body = await request.json()
-        count = body.get("count", 5)
-        style = body.get("style", "auto")
+        count = min(max(int(body.get("count", 5)), 1), 50)
+        style = _validated_style(body.get("style", "auto"))
     except Exception:
         pass
     job_key = f"discussion_msg_{platform}"
@@ -183,8 +189,8 @@ async def message_search(platform: str, request: Request):
     approach_template = ""
     try:
         body = await request.json()
-        count = body.get("count", 5)
-        style = body.get("style", "auto")
+        count = min(max(int(body.get("count", 5)), 1), 50)
+        style = _validated_style(body.get("style", "auto"))
         profile_type = body.get("profile_type", "")
         desires = body.get("desires", [])
         approach_template = body.get("approach_template", "")
@@ -235,8 +241,8 @@ async def auto_reply_toggle(platform: str, request: Request):
     try:
         body = await request.json()
         action = body.get("action", "start")
-        interval = body.get("interval", 60)
-        style = body.get("style", "auto")
+        interval = max(int(body.get("interval", 60)), 30)
+        style = _validated_style(body.get("style", "auto"))
     except Exception:
         pass
     if action == "stop":

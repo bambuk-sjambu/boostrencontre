@@ -66,8 +66,8 @@ def test_determine_stage_9_turns():
 
 
 def test_determine_stage_15_turns():
-    """15 sent messages -> proposition (overflow)."""
-    assert _determine_stage_by_turns(15) == "proposition"
+    """15 sent messages -> cloture (overflow past all stages)."""
+    assert _determine_stage_by_turns(15) == "cloture"
 
 
 # --- get_conversation_stage ---
@@ -365,14 +365,14 @@ def test_proposition_next_is_cloture():
     assert STAGES["proposition"]["next"] == "cloture"
 
 
-def test_determine_stage_by_turns_reaches_proposition_not_cloture():
-    """_determine_stage_by_turns should return 'proposition' for high turn counts
-    because cloture has max_turns=0 and the function falls through to proposition."""
+def test_determine_stage_by_turns_reaches_cloture_for_high_counts():
+    """_determine_stage_by_turns should return 'cloture' (terminal stage) for turn
+    counts that exceed all cumulative stage limits."""
     # Total cumulative: accroche(1) + interet(3) + approfondissement(4) + proposition(2) + cloture(0) = 10
     # After 10 sent messages, cumulative hits 10 at proposition (1+3+4+2=10)
     assert _determine_stage_by_turns(10) == "proposition"
-    # Even more turns should stay at proposition
-    assert _determine_stage_by_turns(20) == "proposition"
+    # Beyond all stages, fallback is the terminal stage "cloture"
+    assert _determine_stage_by_turns(20) == "cloture"
 
 
 @pytest.mark.asyncio

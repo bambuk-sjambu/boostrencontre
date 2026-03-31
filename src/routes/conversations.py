@@ -11,31 +11,30 @@ from ..messaging.conversation_manager import (
     get_conversation_stats,
     get_conversation_stage,
 )
+from .deps import validate_platform
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-ALLOWED_PLATFORMS = {"tinder", "meetic", "wyylde"}
-
 
 @router.get("/conversations/{platform}")
 async def api_list_conversations(platform: str):
     """List all conversations with stage, last message, number of turns."""
-    if platform not in ALLOWED_PLATFORMS:
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     try:
         convs = await list_conversations(platform)
         return {"conversations": convs, "count": len(convs)}
     except Exception as e:
-        logger.error(f"Error listing conversations: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error(f"Error listing conversations: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": "internal_error"})
 
 
 @router.get("/conversations/{platform}/{contact_name}")
 async def api_get_conversation(platform: str, contact_name: str):
     """Full message history for a specific conversation."""
-    if platform not in ALLOWED_PLATFORMS:
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     try:
         messages = await get_full_conversation(platform, contact_name)
@@ -53,18 +52,18 @@ async def api_get_conversation(platform: str, contact_name: str):
             "total_turns": stage_data["total_turns"],
         }
     except Exception as e:
-        logger.error(f"Error getting conversation: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error(f"Error getting conversation: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": "internal_error"})
 
 
 @router.get("/conversation-stats/{platform}")
 async def api_conversation_stats(platform: str):
     """Conversation statistics: count by stage, progression rates, etc."""
-    if platform not in ALLOWED_PLATFORMS:
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     try:
         stats = await get_conversation_stats(platform)
         return stats
     except Exception as e:
-        logger.error(f"Error getting conversation stats: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error(f"Error getting conversation stats: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": "internal_error"})

@@ -155,6 +155,12 @@ def _select_approach_template(
         if key and key in APPROACH_TEMPLATES:
             return key
 
+    # Fallback: choose template based on recipient type
+    raw_type = (recipient_type or "").strip().lower()
+    for type_key, template_key in _TYPE_TO_TEMPLATE.items():
+        if type_key in raw_type and template_key in APPROACH_TEMPLATES:
+            return template_key
+
     return None
 
 

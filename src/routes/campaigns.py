@@ -6,12 +6,11 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from .. import campaign_manager
+from .deps import validate_platform
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-ALLOWED_PLATFORMS = {"tinder", "meetic", "wyylde"}
 
 
 @router.post("/campaigns")
@@ -27,7 +26,7 @@ async def create_campaign_endpoint(request: Request):
 
     if not name:
         return JSONResponse(status_code=400, content={"error": "missing_name"})
-    if platform not in ALLOWED_PLATFORMS:
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
 
     filters = {
@@ -47,7 +46,7 @@ async def create_campaign_endpoint(request: Request):
 @router.get("/campaigns/{platform}")
 async def list_campaigns_endpoint(platform: str):
     """List all campaigns for a platform."""
-    if platform not in ALLOWED_PLATFORMS:
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     campaigns = await campaign_manager.list_campaigns(platform)
     return {"campaigns": campaigns}

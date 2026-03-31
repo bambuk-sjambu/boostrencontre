@@ -210,8 +210,12 @@ class TestSelectApproachTemplate:
         key = _select_approach_template(["Papouilles"], "Femme")
         assert key == "douceur_sensuelle"
 
-    def test_no_desires(self):
+    def test_no_desires_falls_back_to_type(self):
         key = _select_approach_template([], "Femme")
+        assert key == "complicite_intellectuelle"
+
+    def test_no_desires_no_type(self):
+        key = _select_approach_template([], "")
         assert key is None
 
     def test_first_desire_wins(self):
@@ -341,12 +345,24 @@ class TestFirstMessageAdaptive:
         assert "user" in roles
 
     @pytest.mark.asyncio
-    async def test_no_desires_no_approach_section(self):
-        """When bio has no desires and no template given, no APPROCHE section."""
+    async def test_no_desires_type_fallback_approach_section(self):
+        """When bio has no desires but type is known, APPROCHE section uses type fallback."""
         with _patch_openai("Coucou!") as mock_call:
             await generate_first_message({
                 "name": "Marie",
                 "type": "Femme",
+                "bio": "J'aime les balades en foret",
+            })
+        text = _get_all_prompt_text(mock_call)
+        assert "APPROCHE" in text
+
+    @pytest.mark.asyncio
+    async def test_no_desires_no_type_no_approach_section(self):
+        """When bio has no desires and no type, no APPROCHE section."""
+        with _patch_openai("Coucou!") as mock_call:
+            await generate_first_message({
+                "name": "Marie",
+                "type": "",
                 "bio": "J'aime les balades en foret",
             })
         text = _get_all_prompt_text(mock_call)

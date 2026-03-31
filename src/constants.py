@@ -86,10 +86,10 @@ OPENAI_MAX_TOKENS_ENRICH = 500
 # Maps each desire category to keywords that may appear in a recipient's bio.
 # Used by prompt_builder._detect_desires() to enrich AI prompts.
 DESIRE_KEYWORDS = {
-    "Gang bang": ["gang", "gb", "gangbang", "multi"],
+    "Gang bang": ["gang", "gb", "gangbang", "multi-", "multipartenaire"],
     "Échangisme": ["echange", "échange", "echangisme", "swap", "couple echangiste"],
-    "BDSM": ["bdsm", "domination", "soumission", "dom", "sub", "maitre", "maitresse", "bondage"],
-    "Exhibition": ["exhibition", "exhib", "voyeur", "voyeurisme", "montre"],
+    "BDSM": ["bdsm", "domination", "soumission", "dominat", "sub", "maitre", "maitresse", "bondage"],
+    "Exhibition": ["exhibition", "exhib", "voyeur", "voyeurisme"],
     "Feeling": ["feeling", "feeling avant tout", "connexion", "complicite", "affinite"],
     "Fétichisme": ["fetich", "fétich", "pieds", "latex", "cuir", "nylon", "talons"],
     "Hard": ["hard", "extreme", "fist", "double"],

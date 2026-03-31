@@ -139,7 +139,8 @@ Reponds UNIQUEMENT avec le JSON, rien d'autre."""
 
         return {"status": "enriched", "profile": ai_messages.MY_PROFILE}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        logger.error(f"Error enriching profile: {e}", exc_info=True)
+        return {"status": "error", "message": "internal_error"}
 
 
 @router.get("/api/my-profile/{platform}")

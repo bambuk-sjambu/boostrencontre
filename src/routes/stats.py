@@ -7,12 +7,11 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from ..database import get_db, dict_factory
+from .deps import validate_platform
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-ALLOWED_PLATFORMS = {"tinder", "meetic", "wyylde"}
 
 MESSAGE_ACTIONS = ("message", "sidebar_msg", "search_msg")
 REPLY_ACTIONS = ("reply", "sidebar_reply", "auto_reply")
@@ -21,7 +20,7 @@ REPLY_ACTIONS = ("reply", "sidebar_reply", "auto_reply")
 @router.get("/stats/{platform}")
 async def get_stats(platform: str, days: int = 7):
     """Activity statistics for the dashboard."""
-    if platform not in ALLOWED_PLATFORMS:
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if days < 1 or days > 90:
         days = 7

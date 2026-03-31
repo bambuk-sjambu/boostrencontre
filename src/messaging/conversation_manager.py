@@ -81,7 +81,7 @@ def _determine_stage_by_turns(sent_count: int) -> str:
         cumulative += STAGES[stage_name]["max_turns"]
         if sent_count <= cumulative:
             return stage_name
-    return "proposition"
+    return "cloture"
 
 
 async def get_conversation_stage(platform: str, contact_name: str) -> dict:
