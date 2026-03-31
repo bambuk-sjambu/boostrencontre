@@ -1,52 +1,33 @@
 """Test the anti-double-message logic.
 
 RULE: Never send multiple messages to the same person without a reply from them.
-The detection must find our last message in the conversation text,
-and only reply if there is new content AFTER our message.
+Uses the REAL detect_our_last_message() and check_rejection() from source code
+instead of reimplementing the logic.
 """
-import re
+from src.conversation_utils import detect_our_last_message, check_rejection
 
 
-def _has_new_reply(full_text: str, last_msg_sent: str) -> tuple[bool, str]:
-    """Simulate the logic from check_and_reply_unread.
+# ---- _has_new_reply wrapper using real detect_our_last_message ----
+
+def _has_new_reply(full_text: str, last_msg_sent: str | None) -> tuple[bool, str]:
+    """Thin wrapper around real detect_our_last_message for test readability.
     Returns (should_reply, reason)."""
     if not last_msg_sent:
-        # Never messaged them
+        # Never messaged them — reply if there's meaningful content
         return (len(full_text) > 15, "never_messaged")
 
-    # Try to find our last message in the conversation
-    # Use the longest matching snippet, then skip past the FULL message length
-    found_our_msg = False
-    our_msg_end_idx = -1
-    for slen in [60, 40, 25, 15]:
-        snippet = last_msg_sent[:slen]
-        idx = full_text.rfind(snippet)
-        if idx >= 0:
-            found_our_msg = True
-            # Skip past the full message (not just the snippet)
-            our_msg_end_idx = idx + len(last_msg_sent)
-            # But don't go past the conversation text
-            if our_msg_end_idx > len(full_text):
-                our_msg_end_idx = len(full_text)
-            break
+    result = detect_our_last_message(full_text, last_msg_sent)
 
-    if found_our_msg:
-        after_our_msg = full_text[our_msg_end_idx:].strip()
-        clean_after = re.sub(
-            r"(Aujourd'hui \d{1,2}:\d{2}|Hier \d{1,2}:\d{2}|il y a \d+\s*\w+|\d{1,2}:\d{2}|Aujourd'hui|Hier|il y a|à \d|Envoyer|Votre message|paper-plane)",
-            '', after_our_msg
-        )
-        clean_after = clean_after.strip()
-        if len(clean_after) < 15:
-            return (False, f"our_msg_found_nothing_new ({len(clean_after)} chars)")
+    if result["found"]:
+        if result["has_new_content"]:
+            return (True, f"new_content_after_ours ({result['new_content_len']} chars)")
         else:
-            return (True, f"new_content_after_ours ({len(clean_after)} chars)")
+            return (False, f"our_msg_found_nothing_new ({result['new_content_len']} chars)")
     else:
-        # Cannot find our message -> safety: do NOT reply
         return (False, "msg_not_found_safety")
 
 
-# ---- Test cases ----
+# ---- Test cases for detect_our_last_message ----
 
 def test_we_sent_last_no_reply():
     """We sent a message, they didn't reply -> DON'T send again."""
@@ -123,13 +104,27 @@ def test_they_replied_to_our_second_msg():
     assert should, f"Should reply (they wrote after our 2nd msg) but got: {reason}"
 
 
-def test_rejection_detected():
-    """Test rejection patterns."""
-    rejection_patterns = [
-        r"(?i)\b(non merci|pas int[eé]ress|arr[eê]te|stop|fiche[z-]? (?:moi |nous )?la paix|casse.?couilles?|d[eé]gage|bloqu|on t.a (?:dit|fait) non|lache|spam|harc[eè]l)",
-        r"(?i)\b(ne? m.(?:int[eé]resse|convient)|laisse[z-]? (?:moi|nous)|plus la peine|tranquille)",
-    ]
+# ---- Test detect_our_last_message directly ----
 
+def test_detect_returns_dict_structure():
+    """detect_our_last_message returns the expected dict keys."""
+    result = detect_our_last_message("some chat text", "some message")
+    assert "found" in result
+    assert "has_new_content" in result
+    assert "new_content_len" in result
+    assert "new_content" in result
+
+
+def test_detect_empty_last_sent():
+    """If last_sent_msg is empty, found should be False."""
+    result = detect_our_last_message("Hello world", "")
+    assert not result["found"]
+
+
+# ---- Rejection tests using real check_rejection ----
+
+def test_rejection_detected():
+    """Test rejection patterns using the real check_rejection function."""
     rejects = [
         "T'es pas casse couilles on t'a dit non",
         "Non merci, pas interessée",
@@ -147,9 +142,7 @@ def test_rejection_detected():
     ]
 
     for text in rejects:
-        found = any(re.search(p, text) for p in rejection_patterns)
-        assert found, f"Should detect rejection in: '{text}'"
+        assert check_rejection(text), f"Should detect rejection in: '{text}'"
 
     for text in non_rejects:
-        found = any(re.search(p, text) for p in rejection_patterns)
-        assert not found, f"Should NOT detect rejection in: '{text}'"
+        assert not check_rejection(text), f"Should NOT detect rejection in: '{text}'"

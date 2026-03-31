@@ -322,3 +322,105 @@ async def test_conversation_history_table_exists():
         )
         row = await cursor.fetchone()
     assert row is not None, "conversation_history table not created"
+
+
+# --- "cloture" stage tests ---
+
+from src.messaging.conversation_manager import _STAGE_ORDER
+
+
+def test_cloture_stage_exists_in_stages():
+    """The 'cloture' stage must exist in STAGES dict."""
+    assert "cloture" in STAGES, "STAGES should contain 'cloture'"
+
+
+def test_cloture_stage_in_stage_order():
+    """The 'cloture' stage must be in _STAGE_ORDER."""
+    assert "cloture" in _STAGE_ORDER, "'cloture' should be in _STAGE_ORDER"
+
+
+def test_cloture_is_last_stage():
+    """'cloture' should be the last stage in the progression order."""
+    assert _STAGE_ORDER[-1] == "cloture"
+
+
+def test_cloture_max_turns_zero():
+    """'cloture' stage must have max_turns=0 (conversation is over)."""
+    assert STAGES["cloture"]["max_turns"] == 0
+
+
+def test_cloture_next_is_none():
+    """'cloture' stage has no next stage (end of funnel)."""
+    assert STAGES["cloture"]["next"] is None
+
+
+def test_cloture_prompt_addon_no_relance():
+    """'cloture' prompt_addon should instruct the bot to stop relancing."""
+    addon = STAGES["cloture"]["prompt_addon"].lower()
+    assert "relance" in addon, "cloture prompt_addon should mention 'relance'"
+
+
+def test_proposition_next_is_cloture():
+    """The 'proposition' stage should advance to 'cloture'."""
+    assert STAGES["proposition"]["next"] == "cloture"
+
+
+def test_determine_stage_by_turns_reaches_proposition_not_cloture():
+    """_determine_stage_by_turns should return 'proposition' for high turn counts
+    because cloture has max_turns=0 and the function falls through to proposition."""
+    # Total cumulative: accroche(1) + interet(3) + approfondissement(4) + proposition(2) + cloture(0) = 10
+    # After 10 sent messages, cumulative hits 10 at proposition (1+3+4+2=10)
+    assert _determine_stage_by_turns(10) == "proposition"
+    # Even more turns should stay at proposition
+    assert _determine_stage_by_turns(20) == "proposition"
+
+
+@pytest.mark.asyncio
+async def test_transition_proposition_to_cloture():
+    """A conversation that has exhausted 'proposition' turns should advance to 'cloture'."""
+    # Build a conversation with enough sent messages to be in proposition stage
+    # accroche: 1, interet: 3, approfondissement: 4, proposition: 2 = 10 total sent
+    for i in range(9):
+        await record_message("wyylde", "Zara", "sent", f"Message {i+1}")
+        await record_message("wyylde", "Zara", "received", f"Reply {i+1}")
+
+    # Manually set the last message's stage to 'proposition' to simulate correct state
+    async with await get_db() as db:
+        await db.execute(
+            "UPDATE conversation_history SET stage = 'proposition' "
+            "WHERE platform = 'wyylde' AND contact_name = 'Zara' "
+            "AND id = (SELECT MAX(id) FROM conversation_history "
+            "WHERE platform = 'wyylde' AND contact_name = 'Zara')"
+        )
+        await db.commit()
+
+    # Send 2 more messages (proposition max_turns=2)
+    await record_message("wyylde", "Zara", "sent", "On se retrouve quand?")
+    await record_message("wyylde", "Zara", "received", "Pourquoi pas ce weekend")
+
+    # Update stage to proposition for the latest messages
+    async with await get_db() as db:
+        await db.execute(
+            "UPDATE conversation_history SET stage = 'proposition' "
+            "WHERE platform = 'wyylde' AND contact_name = 'Zara' "
+            "AND id = (SELECT MAX(id) FROM conversation_history "
+            "WHERE platform = 'wyylde' AND contact_name = 'Zara')"
+        )
+        await db.commit()
+
+    # Now detect transition: proposition exhausted, should advance to cloture
+    new_stage = await detect_stage_transition(
+        "wyylde", "Zara", "Ok super, a samedi alors!"
+    )
+    assert new_stage == "cloture"
+
+
+def test_stages_chain_reaches_cloture():
+    """Following the 'next' chain from 'accroche' should end at 'cloture'."""
+    stage = "accroche"
+    visited = []
+    while stage is not None:
+        visited.append(stage)
+        stage = STAGES[stage]["next"]
+    assert visited[-1] == "cloture"
+    assert "proposition" in visited
