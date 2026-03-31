@@ -8,23 +8,11 @@ from fastapi.responses import JSONResponse
 from .. import bot_engine
 from ..database import get_db
 from ..explorer import explore_site
+from .deps import validate_platform
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# Shared state — injected from app.py at startup
-ALLOWED_PLATFORMS: set = set()
-
-
-def init(allowed_platforms: set):
-    """Initialize shared references from the main app module."""
-    global ALLOWED_PLATFORMS
-    ALLOWED_PLATFORMS = allowed_platforms
-
-
-def _validate_platform(platform: str) -> bool:
-    return platform in ALLOWED_PLATFORMS
 
 
 @router.get("/debug/{platform}")
@@ -547,7 +535,7 @@ async def test_click(platform: str):
 @router.post("/explore/{platform}")
 async def explore_platform(platform: str):
     """Run full exploration of a platform and generate reference document."""
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     session = bot_engine.browser_sessions.get(platform)
     if not session:

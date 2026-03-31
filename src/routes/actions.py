@@ -8,27 +8,22 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from .. import bot_engine
+from .deps import validate_platform
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 # Shared state — injected from app.py at startup
-ALLOWED_PLATFORMS: set = set()
 running_jobs: dict = {}
 job_results: dict = {}
 
 
-def init(allowed_platforms: set, jobs: dict, results: dict):
+def init(jobs: dict, results: dict):
     """Initialize shared references from the main app module."""
-    global ALLOWED_PLATFORMS, running_jobs, job_results
-    ALLOWED_PLATFORMS = allowed_platforms
+    global running_jobs, job_results
     running_jobs = jobs
     job_results = results
-
-
-def _validate_platform(platform: str) -> bool:
-    return platform in ALLOWED_PLATFORMS
 
 
 async def _run_likes_task(platform: str, profile_filter: str = ""):
@@ -73,10 +68,10 @@ async def _run_discussion_messages_task(platform: str, count: int = 5, style: st
 
 @router.post("/likes/{platform}")
 async def run_likes(platform: str, request: Request):
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected", "message": f"{platform} n'est pas connecte. Clique d'abord sur la plateforme pour ouvrir le navigateur et te connecter."}
+        return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte. Ouvre le navigateur d'abord."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
         return {"error": "not_logged_in", "message": f"Tu n'es pas connecte sur {platform}. Connecte-toi dans le navigateur ouvert."}
@@ -97,10 +92,10 @@ async def run_likes(platform: str, request: Request):
 
 @router.post("/messages/{platform}")
 async def run_messages(platform: str, request: Request):
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected", "message": f"{platform} n'est pas connecte. Clique d'abord sur la plateforme pour ouvrir le navigateur et te connecter."}
+        return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte. Ouvre le navigateur d'abord."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
         return {"error": "not_logged_in", "message": f"Tu n'es pas connecte sur {platform}. Connecte-toi dans le navigateur ouvert."}
@@ -122,10 +117,10 @@ async def run_messages(platform: str, request: Request):
 @router.post("/replies/{platform}")
 async def run_replies(platform: str, request: Request):
     """Reply to unread discussions in the right sidebar."""
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected", "message": f"{platform} n'est pas connecte."}
+        return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
         return {"error": "not_logged_in", "message": f"Non connecte sur {platform}."}
@@ -147,10 +142,10 @@ async def run_replies(platform: str, request: Request):
 @router.post("/message-discussions/{platform}")
 async def message_discussions(platform: str, request: Request):
     """Send personalized messages to sidebar discussions."""
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected", "message": f"{platform} n'est pas connecte."}
+        return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
         return {"error": "not_logged_in", "message": f"Non connecte sur {platform}."}
@@ -174,10 +169,10 @@ async def message_discussions(platform: str, request: Request):
 @router.post("/message-search/{platform}")
 async def message_search(platform: str, request: Request):
     """Send personalized messages to profiles from search results."""
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected", "message": f"{platform} n'est pas connecte."}
+        return JSONResponse(status_code=400, content={"error": "not_connected", "message": f"{platform} n'est pas connecte."})
     logged_in = await bot_engine.check_login(platform)
     if not logged_in:
         return {"error": "not_logged_in", "message": f"Non connecte sur {platform}."}
@@ -219,10 +214,10 @@ async def message_search(platform: str, request: Request):
 @router.post("/check-replies/{platform}")
 async def check_replies_now(platform: str):
     """Manually trigger unread sidebar reply."""
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected"}
+        return JSONResponse(status_code=400, content={"error": "not_connected"})
     replied = await bot_engine.reply_to_unread_sidebar(platform)
     return {"status": "done", "replied": replied, "count": len(replied)}
 
@@ -230,10 +225,10 @@ async def check_replies_now(platform: str):
 @router.post("/auto-reply/{platform}")
 async def auto_reply_toggle(platform: str, request: Request):
     """Start or stop auto-reply monitoring."""
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
-        return {"error": "not_connected"}
+        return JSONResponse(status_code=400, content={"error": "not_connected"})
     action = "start"
     interval = 60
     style = "auto"
@@ -291,7 +286,7 @@ async def get_profile_score(platform: str, name: str):
 async def get_scoring_stats(platform: str):
     """Return scoring statistics: distribution, averages, top profiles."""
     from ..database import get_db, dict_factory
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
 
     async with await get_db() as db:

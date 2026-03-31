@@ -147,7 +147,7 @@ async def my_profile(platform: str):
     """Extract own profile description and sent messages from the platform."""
     session = bot_engine.browser_sessions.get(platform)
     if not session:
-        return {"error": "not_connected"}
+        return JSONResponse(status_code=400, content={"error": "not_connected"})
     page = session["platform"].page
     import asyncio as aio
 

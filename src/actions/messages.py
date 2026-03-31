@@ -12,6 +12,19 @@ logger = logging.getLogger(__name__)
 # Minimum score thresholds for message actions
 MIN_SCORE_MESSAGE = 40  # Grade D profiles are skipped
 
+ALL_MESSAGE_ACTIONS = ('message', 'sidebar_msg', 'search_msg')
+
+
+async def _was_already_messaged(platform_name: str, name: str) -> bool:
+    """Check if we already sent any type of message to this contact."""
+    async with await get_db() as db:
+        cursor = await db.execute(
+            "SELECT id FROM activity_log WHERE platform = ? "
+            "AND action IN ('message', 'sidebar_msg', 'search_msg') AND target_name = ?",
+            (platform_name, name)
+        )
+        return bool(await cursor.fetchone())
+
 
 async def run_messages(platform_name: str, style: str = "auto") -> list:
     session = browser_sessions.get(platform_name)
@@ -42,14 +55,7 @@ async def run_messages(platform_name: str, style: str = "auto") -> list:
             if match["name"].lower() in (my_pseudo, my_pseudo[:2]):
                 continue
 
-            async with await get_db() as db:
-                cursor = await db.execute(
-                    "SELECT id FROM activity_log WHERE platform = ? AND action = 'message' AND target_name = ?",
-                    (platform_name, match["name"])
-                )
-                already_sent = await cursor.fetchone()
-
-            if already_sent:
+            if await _was_already_messaged(platform_name, match["name"]):
                 logger.info(f"Already messaged {match['name']}, skipping")
                 continue
 
@@ -149,14 +155,7 @@ async def message_discussions(platform_name: str, count: int = 5, style: str = "
         name = visible_conv["name"]
         logger.info(f"Clicked discussion: {name}")
 
-        async with await get_db() as db:
-            cursor = await db.execute(
-                "SELECT id FROM activity_log WHERE platform = ? AND action IN ('message', 'sidebar_msg') AND target_name = ?",
-                (platform_name, name)
-            )
-            already_sent = await cursor.fetchone()
-
-        if already_sent:
+        if await _was_already_messaged(platform_name, name):
             logger.info(f"Already messaged {name}, skipping")
             continue
 
@@ -262,14 +261,7 @@ async def message_from_search(platform_name: str, count: int = 5, style: str = "
                     skipped += 1
                     continue
 
-            async with await get_db() as db:
-                cursor = await db.execute(
-                    "SELECT id FROM activity_log WHERE platform = ? AND action IN ('message', 'sidebar_msg', 'search_msg') AND target_name = ?",
-                    (platform_name, name)
-                )
-                already_sent = await cursor.fetchone()
-
-            if already_sent:
+            if await _was_already_messaged(platform_name, name):
                 logger.info(f"Already messaged {name}, skipping")
                 skipped += 1
                 continue

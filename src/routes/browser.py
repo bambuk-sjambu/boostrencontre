@@ -8,27 +8,22 @@ from fastapi.responses import JSONResponse
 
 from .. import bot_engine
 from ..database import get_db
+from .deps import validate_platform
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 # Shared state — injected from app.py at startup
-ALLOWED_PLATFORMS: set = set()
 running_jobs: dict = {}
 job_results: dict = {}
 
 
-def init(allowed_platforms: set, jobs: dict, results: dict):
+def init(jobs: dict, results: dict):
     """Initialize shared references from the main app module."""
-    global ALLOWED_PLATFORMS, running_jobs, job_results
-    ALLOWED_PLATFORMS = allowed_platforms
+    global running_jobs, job_results
     running_jobs = jobs
     job_results = results
-
-
-def _validate_platform(platform: str) -> bool:
-    return platform in ALLOWED_PLATFORMS
 
 
 async def _open_browser_task(platform: str):
@@ -52,7 +47,7 @@ async def _open_browser_task(platform: str):
 
 @router.post("/browser/{platform}")
 async def open_browser(platform: str):
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     job_key = f"browser_{platform}"
     if platform in bot_engine.browser_sessions:
@@ -66,7 +61,7 @@ async def open_browser(platform: str):
 
 @router.get("/check-login/{platform}")
 async def check_login(platform: str):
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     logged_in = await bot_engine.check_login(platform)
     if logged_in:
@@ -79,7 +74,7 @@ async def screenshot(platform: str):
     """Take a screenshot of the current page."""
     session = bot_engine.browser_sessions.get(platform)
     if not session:
-        return {"error": "not_connected"}
+        return JSONResponse(status_code=400, content={"error": "not_connected"})
     page = session["platform"].page
     path = f"/tmp/{platform}_screenshot.png"
     await page.screenshot(path=path, full_page=False)
@@ -89,7 +84,7 @@ async def screenshot(platform: str):
 
 @router.post("/close/{platform}")
 async def close_browser(platform: str):
-    if not _validate_platform(platform):
+    if not validate_platform(platform):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     await bot_engine.close_browser(platform)
     return {"status": "closed"}

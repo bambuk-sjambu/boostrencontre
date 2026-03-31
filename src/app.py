@@ -23,6 +23,7 @@ from .routes import stats as stats_routes
 from .routes import campaigns as campaigns_routes
 from .routes import conversations as conversations_routes
 from .routes import email_summary as email_summary_routes
+from .routes.deps import init_platforms
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -129,14 +130,10 @@ async def security_middleware(request: Request, call_next):
     return response
 
 
-def _validate_platform(platform: str) -> bool:
-    """Check platform against whitelist."""
-    return platform in ALLOWED_PLATFORMS
-
-
-# --- Initialize routers with shared state ---
-browser_routes.init(ALLOWED_PLATFORMS, running_jobs, job_results)
-actions_routes.init(ALLOWED_PLATFORMS, running_jobs, job_results)
+# --- Initialize shared platforms + router state ---
+init_platforms(ALLOWED_PLATFORMS)
+browser_routes.init(running_jobs, job_results)
+actions_routes.init(running_jobs, job_results)
 
 # --- Include routers ---
 app.include_router(browser_routes.router, prefix="/api")
@@ -151,7 +148,6 @@ app.include_router(email_summary_routes.router, prefix="/api")
 # --- Debug routes: only if DEBUG=true ---
 if os.getenv("DEBUG", "false").lower() == "true":
     from .routes import debug as debug_routes
-    debug_routes.init(ALLOWED_PLATFORMS)
     app.include_router(debug_routes.router, prefix="/api")
     logger.info("Debug routes enabled (DEBUG=true)")
 

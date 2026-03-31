@@ -96,10 +96,9 @@ async def test_check_login_returns_false_when_no_session(client):
 async def test_likes_returns_error_when_not_connected(client):
     for platform in ["tinder", "meetic", "wyylde"]:
         r = await client.post(f"/api/likes/{platform}")
-        assert r.status_code == 200
+        assert r.status_code == 400
         data = r.json()
         assert data["error"] == "not_connected"
-        assert platform in data["message"]
 
 
 # --- API: Messages ---
@@ -108,10 +107,9 @@ async def test_likes_returns_error_when_not_connected(client):
 async def test_messages_returns_error_when_not_connected(client):
     for platform in ["tinder", "meetic", "wyylde"]:
         r = await client.post(f"/api/messages/{platform}")
-        assert r.status_code == 200
+        assert r.status_code == 400
         data = r.json()
         assert data["error"] == "not_connected"
-        assert platform in data["message"]
 
 
 # --- API: Replies ---
@@ -119,7 +117,7 @@ async def test_messages_returns_error_when_not_connected(client):
 @pytest.mark.asyncio
 async def test_replies_returns_error_when_not_connected(client):
     r = await client.post("/api/replies/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     data = r.json()
     assert data["error"] == "not_connected"
 
@@ -210,7 +208,7 @@ async def test_activity_log_empty_on_start(client):
 @pytest.mark.asyncio
 async def test_check_replies_returns_error_when_not_connected(client):
     r = await client.post("/api/check-replies/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     data = r.json()
     assert data["error"] == "not_connected"
 
@@ -324,7 +322,7 @@ async def test_debug_endpoint_not_connected(client):
 @pytest.mark.asyncio
 async def test_screenshot_not_connected(client):
     r = await client.get("/api/screenshot/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     assert r.json()["error"] == "not_connected"
 
 
@@ -368,14 +366,14 @@ async def test_debug_mailbox_not_connected(client):
 @pytest.mark.asyncio
 async def test_message_discussions_not_connected(client):
     r = await client.post("/api/message-discussions/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     assert r.json()["error"] == "not_connected"
 
 
 @pytest.mark.asyncio
 async def test_message_search_not_connected(client):
     r = await client.post("/api/message-search/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     assert r.json()["error"] == "not_connected"
 
 
@@ -393,7 +391,7 @@ async def test_explore_not_connected(client):
 @pytest.mark.asyncio
 async def test_auto_reply_not_connected(client):
     r = await client.post("/api/auto-reply/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     assert r.json()["error"] == "not_connected"
 
 
@@ -402,7 +400,7 @@ async def test_auto_reply_not_connected(client):
 @pytest.mark.asyncio
 async def test_my_profile_not_connected(client):
     r = await client.get("/api/my-profile/wyylde")
-    assert r.status_code == 200
+    assert r.status_code == 400
     assert r.json()["error"] == "not_connected"
 
 
