@@ -175,18 +175,32 @@ async def message_discussions(platform_name: str, count: int = 5, style: str = "
                 profile_info["name"] = name
             logger.info(f"Profile: {profile_info['name']} | {profile_info.get('type')} | bio={profile_info.get('bio', '')[:60]}...")
 
-            message = await generate_first_message(profile_info, style=style)
+            # Score the profile before messaging
+            score_result = await score_profile(profile_info)
+            await save_score(platform_name, name, score_result,
+                             target_type=profile_info.get("type", ""))
+            logger.info(f"Score {name}: {score_result['total']}/100 "
+                        f"(grade={score_result['grade']}, rec={score_result['recommendation']})")
+
+            if score_result["total"] < MIN_SCORE_MESSAGE:
+                logger.info(f"Skipping {name}: score {score_result['total']} < {MIN_SCORE_MESSAGE}")
+                continue
+
+            # Use suggested style unless user explicitly chose one
+            effective_style = style if style != "auto" else score_result["suggested_style"]
+
+            message = await generate_first_message(profile_info, style=effective_style)
             success = await platform.send_message_from_profile(message)
 
             if success:
                 async with await get_db() as db:
                     await db.execute(
                         "INSERT INTO activity_log (platform, action, target_name, message_sent, style) VALUES (?, ?, ?, ?, ?)",
-                        (platform_name, "sidebar_msg", name, message, style)
+                        (platform_name, "sidebar_msg", name, message, effective_style)
                     )
                     await db.commit()
                 await increment_daily_count(platform_name, "messages")
-                sent.append({"name": name, "message": message})
+                sent.append({"name": name, "message": message, "score": score_result["total"]})
                 logger.info(f"Message sent to {name}: {message[:50]}...")
 
             await _human_delay_with_pauses(2.0, 5.0)

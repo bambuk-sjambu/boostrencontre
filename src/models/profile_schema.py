@@ -225,13 +225,13 @@ def build_profile_prompt_text(profile: dict) -> str:
     for key, spec in IDENTITY_FIELDS.items():
         value = profile.get(key, "").strip()
         if value:
-            lines.append(f"{spec['label']}: {value}")
+            lines.append(f"{spec['label']}: {html.unescape(value)}")
 
     # Then categories
     for key, spec in PROFILE_CATEGORIES.items():
         value = profile.get(key, "").strip()
         if value:
-            lines.append(f"{spec['label']}: {value}")
+            lines.append(f"{spec['label']}: {html.unescape(value)}")
 
     if not lines:
         return "(Profil non renseigne)"

@@ -415,7 +415,10 @@ Reponds UNIQUEMENT avec le message, rien d'autre. Pas de guillemets, pas de comm
     if sanitized:
         try:
             await record_message(platform, sender_name, "sent", sanitized, style=style)
-            await detect_stage_transition(platform, sender_name, conversation_text)
+            # Extract only the last non-empty line for stage transition detection
+            last_reply_lines = [l.strip() for l in conversation_text.strip().splitlines() if l.strip()]
+            last_reply = last_reply_lines[-1] if last_reply_lines else conversation_text
+            await detect_stage_transition(platform, sender_name, last_reply)
         except Exception as e:
             logger.warning(f"Failed to record conversation history: {e}")
 

@@ -40,7 +40,8 @@ async def _open_browser_task(platform: str):
                 await db.commit()
         job_results[f"browser_{platform}"] = result
     except Exception as e:
-        job_results[f"browser_{platform}"] = {"status": "error", "message": str(e)}
+        logger.error(f"Browser open error: {e}", exc_info=True)
+        job_results[f"browser_{platform}"] = {"status": "error", "message": "internal_error"}
     finally:
         running_jobs.pop(f"browser_{platform}", None)
 
@@ -72,6 +73,8 @@ async def check_login(platform: str):
 @router.get("/screenshot/{platform}")
 async def screenshot(platform: str):
     """Take a screenshot of the current page."""
+    if not validate_platform(platform):
+        return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     session = bot_engine.browser_sessions.get(platform)
     if not session:
         return JSONResponse(status_code=400, content={"error": "not_connected"})

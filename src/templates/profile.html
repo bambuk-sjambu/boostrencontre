@@ -89,6 +89,13 @@
     </div>
 
     <script>
+        function esc(s) {
+            if (s == null) return '';
+            const d = document.createElement('div');
+            d.textContent = String(s);
+            return d.innerHTML;
+        }
+
         const CATEGORIES = [
             {key: 'passions', name: 'Passions & centres d\'interet', placeholder: 'Ex: voyages, photo, cuisine asiatique, cinema...'},
             {key: 'pratiques', name: 'Pratiques & preferences', placeholder: 'Ex: libertinage soft, echangisme, rencontres a 3...'},
@@ -118,10 +125,10 @@
                 const statusText = val.trim() ? 'rempli' : 'vide';
                 html += `<div class="cat-item">
                     <div class="cat-label">
-                        <span class="name">${cat.name}</span>
+                        <span class="name">${esc(cat.name)}</span>
                         <span class="status ${statusClass}">${statusText}</span>
                     </div>
-                    <textarea id="cat-${cat.key}" rows="2" placeholder="${cat.placeholder}">${val}</textarea>
+                    <textarea id="cat-${cat.key}" rows="2" placeholder="${cat.placeholder}">${esc(val)}</textarea>
                 </div>`;
             }
             document.getElementById('categories').innerHTML = html;
@@ -145,7 +152,7 @@
                 } else {
                     let html = '<table class="log-table"><thead><tr><th>Date</th><th>Action</th><th>Destinataire</th><th>Message</th></tr></thead><tbody>';
                     for (const m of msgs) {
-                        html += `<tr><td>${m.created_at || ''}</td><td>${m.action || ''}</td><td>${m.target_name || ''}</td><td>${(m.message_sent || '').substring(0, 100)}</td></tr>`;
+                        html += `<tr><td>${esc(m.created_at)}</td><td>${esc(m.action)}</td><td>${esc(m.target_name)}</td><td>${esc((m.message_sent || '').substring(0, 100))}</td></tr>`;
                     }
                     html += '</tbody></table>';
                     document.getElementById('messages-list').innerHTML = html;

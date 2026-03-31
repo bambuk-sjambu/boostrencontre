@@ -6,7 +6,8 @@ from ..conversation_utils import _human_delay_with_pauses, filter_ui_text
 from ..rate_limiter import check_daily_limit, increment_daily_count
 from ..messaging.ai_messages import generate_reply_message, MY_PROFILE
 from ..messaging.conversation_manager import record_message as record_conv_message
-from .replies_helpers import _log_reply
+from .replies_helpers import _log_reply, _is_rejected, _log_rejection
+from ..conversation_utils import check_rejection
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +38,13 @@ async def reply_to_inbox(platform_name: str, style: str = "auto") -> list:
             if sender_name.lower() == my_pseudo:
                 continue
 
+            if await _is_rejected(platform_name, sender_name):
+                logger.info(f"Contact {sender_name} is rejected, skipping")
+                continue
+
             async with await get_db() as db:
                 cursor = await db.execute(
-                    "SELECT id FROM activity_log WHERE platform = ? AND action = 'reply' AND target_name = ?",
+                    "SELECT id FROM activity_log WHERE platform = ? AND action IN ('reply', 'auto_reply', 'sidebar_reply') AND target_name = ?",
                     (platform_name, sender_name)
                 )
                 if await cursor.fetchone():
@@ -54,6 +59,11 @@ async def reply_to_inbox(platform_name: str, style: str = "auto") -> list:
             if not full_text or len(full_text) < 10:
                 continue
             if not conv_data.get("hasMessages"):
+                continue
+
+            if check_rejection(full_text):
+                logger.info(f"Rejection detected in conversation with {sender_name}, skipping")
+                await _log_rejection(platform_name, sender_name)
                 continue
 
             meaningful_lines = filter_ui_text(full_text, sender_name)
@@ -116,9 +126,13 @@ async def reply_to_sidebar(platform_name: str, style: str = "auto") -> list:
             if sender_name.lower() == my_pseudo:
                 continue
 
+            if await _is_rejected(platform_name, sender_name):
+                logger.info(f"Contact {sender_name} is rejected, skipping")
+                continue
+
             async with await get_db() as db:
                 cursor = await db.execute(
-                    "SELECT id FROM activity_log WHERE platform = ? AND action IN ('reply', 'sidebar_reply') AND target_name = ?",
+                    "SELECT id FROM activity_log WHERE platform = ? AND action IN ('reply', 'auto_reply', 'sidebar_reply') AND target_name = ?",
                     (platform_name, sender_name)
                 )
                 if await cursor.fetchone():
@@ -136,6 +150,11 @@ async def reply_to_sidebar(platform_name: str, style: str = "auto") -> list:
 
             full_text = conv_data.get("fullText", "")
             if not full_text or len(full_text) < 10:
+                continue
+
+            if check_rejection(full_text):
+                logger.info(f"Rejection detected in sidebar conversation with {sender_name}, skipping")
+                await _log_rejection(platform_name, sender_name)
                 continue
 
             meaningful_lines = filter_ui_text(full_text, sender_name)

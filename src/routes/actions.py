@@ -37,7 +37,8 @@ async def _run_likes_task(platform: str, profile_filter: str = ""):
         liked = await bot_engine.run_likes(platform, profile_filter=profile_filter)
         job_results[f"likes_{platform}"] = {"liked": liked, "count": len(liked), "status": "done"}
     except Exception as e:
-        job_results[f"likes_{platform}"] = {"error": str(e), "status": "error"}
+        logger.error(f"Likes task error: {e}", exc_info=True)
+        job_results[f"likes_{platform}"] = {"error": "internal_error", "status": "error"}
     finally:
         running_jobs.pop(f"likes_{platform}", None)
 
@@ -47,7 +48,8 @@ async def _run_messages_task(platform: str, style: str = "auto"):
         sent = await bot_engine.run_messages(platform, style=style)
         job_results[f"messages_{platform}"] = {"sent": sent, "count": len(sent), "status": "done"}
     except Exception as e:
-        job_results[f"messages_{platform}"] = {"error": str(e), "status": "error"}
+        logger.error(f"Messages task error: {e}", exc_info=True)
+        job_results[f"messages_{platform}"] = {"error": "internal_error", "status": "error"}
     finally:
         running_jobs.pop(f"messages_{platform}", None)
 
@@ -57,7 +59,8 @@ async def _run_replies_task(platform: str, style: str = "auto"):
         replied = await bot_engine.reply_to_unread_sidebar(platform, style=style)
         job_results[f"replies_{platform}"] = {"replied": replied, "count": len(replied), "status": "done"}
     except Exception as e:
-        job_results[f"replies_{platform}"] = {"error": str(e), "status": "error"}
+        logger.error(f"Replies task error: {e}", exc_info=True)
+        job_results[f"replies_{platform}"] = {"error": "internal_error", "status": "error"}
     finally:
         running_jobs.pop(f"replies_{platform}", None)
 
@@ -67,7 +70,8 @@ async def _run_discussion_messages_task(platform: str, count: int = 5, style: st
         sent = await bot_engine.message_discussions(platform, count=count, style=style)
         job_results[f"discussion_msg_{platform}"] = {"sent": sent, "count": len(sent), "status": "done"}
     except Exception as e:
-        job_results[f"discussion_msg_{platform}"] = {"error": str(e), "status": "error"}
+        logger.error(f"Discussion messages task error: {e}", exc_info=True)
+        job_results[f"discussion_msg_{platform}"] = {"error": "internal_error", "status": "error"}
     finally:
         running_jobs.pop(f"discussion_msg_{platform}", None)
 
@@ -204,7 +208,8 @@ async def message_search(platform: str, request: Request):
                                                           approach_template=approach_template)
             job_results[f"search_msg_{plat}"] = {"status": "done", "sent": result, "count": len(result)}
         except Exception as e:
-            job_results[f"search_msg_{plat}"] = {"status": "error", "error": str(e)}
+            logger.error(f"Search messages task error: {e}", exc_info=True)
+            job_results[f"search_msg_{plat}"] = {"status": "error", "error": "internal_error"}
         finally:
             running_jobs.pop(f"search_msg_{plat}", None)
 
@@ -253,20 +258,28 @@ async def auto_reply_toggle(platform: str, request: Request):
         return {"status": "started", "interval": interval}
 
 
+_VALID_JOB_TYPES = {"likes", "messages", "replies", "discussion_msg", "search_msg", "browser"}
+
+
 @router.get("/job-status/{job_type}/{platform}")
 async def job_status(job_type: str, platform: str):
+    if not validate_platform(platform):
+        return JSONResponse(status_code=400, content={"error": "invalid_platform"})
+    if job_type not in _VALID_JOB_TYPES:
+        return JSONResponse(status_code=400, content={"error": "invalid_job_type"})
     job_key = f"{job_type}_{platform}"
     if job_key in running_jobs:
         return {"status": "running"}
     if job_key in job_results:
-        result = job_results.pop(job_key)
-        return result
+        return job_results.pop(job_key)
     return {"status": "idle"}
 
 
 @router.get("/daily-stats/{platform}")
 async def get_daily_stats_endpoint(platform: str):
     """Return daily action counters and limits for the given platform."""
+    if not validate_platform(platform):
+        return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     from ..rate_limiter import get_daily_stats
     stats = await get_daily_stats(platform)
     return {"stats": stats, "date": str(date.today())}
@@ -275,6 +288,8 @@ async def get_daily_stats_endpoint(platform: str):
 @router.get("/profile-score/{platform}/{name}")
 async def get_profile_score(platform: str, name: str):
     """Return the stored score for a specific profile."""
+    if not validate_platform(platform):
+        return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     from ..database import get_db, dict_factory
     async with await get_db() as db:
         db.row_factory = dict_factory

@@ -52,22 +52,6 @@ async def increment_daily_count(platform: str, action: str) -> int:
     return row[0] if row else 1
 
 
-async def _get_custom_limit(action: str) -> int | None:
-    """Read a custom limit from the settings table if stored, else None."""
-    key = f"daily_limit_{action}"
-    async with aiosqlite.connect(db_mod.DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT value FROM daily_limits WHERE action = ?", (key,)
-        )
-        row = await cursor.fetchone()
-    if row:
-        try:
-            return int(row[0])
-        except (ValueError, TypeError):
-            pass
-    return None
-
-
 async def check_daily_limit(platform: str, action: str) -> tuple[bool, int, int]:
     """Check whether the action is still allowed today.
 

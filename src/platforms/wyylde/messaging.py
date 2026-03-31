@@ -274,26 +274,41 @@ class WyyldeMessagingMixin:
 
     async def _find_editor(self, wide_first: bool = True) -> dict | None:
         """Find a TipTap editor on the page. Retries up to 5 times.
-        If wide_first=True, prefer wide modal editor; otherwise any editor."""
+        If wide_first=True, prefer wide modal editor; if False, prefer narrow chat editor."""
         for attempt in range(5):
-            editor_pos = await self.page.evaluate("""(sel) => {
+            editor_pos = await self.page.evaluate("""(args) => {
+                const sel = args.sel;
+                const wideFirst = args.wideFirst;
                 const editors = document.querySelectorAll(sel.tiptap);
-                // Wide modal editor
-                for (const e of editors) {
-                    const rect = e.getBoundingClientRect();
-                    if (rect.width > 400 && rect.x < 700 && rect.x > 200 && rect.height > 0) {
-                        return {found: true, x: Math.round(rect.x + rect.width / 2),
-                                y: Math.round(rect.y + rect.height / 2), w: Math.round(rect.width)};
+
+                function findWide() {
+                    for (const e of editors) {
+                        const rect = e.getBoundingClientRect();
+                        if (rect.width > 400 && rect.x < 700 && rect.x > 200 && rect.height > 0) {
+                            return {found: true, x: Math.round(rect.x + rect.width / 2),
+                                    y: Math.round(rect.y + rect.height / 2), w: Math.round(rect.width)};
+                        }
                     }
+                    return null;
                 }
-                // Chat popup editor (narrow)
-                for (const e of editors) {
-                    const rect = e.getBoundingClientRect();
-                    if (rect.width > 100 && rect.width < 350 && rect.height > 0) {
-                        return {found: true, x: Math.round(rect.x + rect.width / 2),
-                                y: Math.round(rect.y + rect.height / 2), w: Math.round(rect.width)};
+
+                function findNarrow() {
+                    for (const e of editors) {
+                        const rect = e.getBoundingClientRect();
+                        if (rect.width > 100 && rect.width < 350 && rect.height > 0) {
+                            return {found: true, x: Math.round(rect.x + rect.width / 2),
+                                    y: Math.round(rect.y + rect.height / 2), w: Math.round(rect.width)};
+                        }
                     }
+                    return null;
                 }
+
+                // Search in order based on preference
+                const first = wideFirst ? findWide : findNarrow;
+                const second = wideFirst ? findNarrow : findWide;
+                const result = first() || second();
+                if (result) return result;
+
                 // Fallback: any contenteditable
                 const divs = document.querySelectorAll(sel.fallback);
                 for (const div of divs) {
@@ -304,7 +319,7 @@ class WyyldeMessagingMixin:
                     }
                 }
                 return {found: false};
-            }""", {"tiptap": TIPTAP_EDITOR, "fallback": CONTENTEDITABLE_FALLBACK})
+            }""", {"sel": {"tiptap": TIPTAP_EDITOR, "fallback": CONTENTEDITABLE_FALLBACK}, "wideFirst": wide_first})
 
             if editor_pos.get("found"):
                 return editor_pos

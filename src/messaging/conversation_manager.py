@@ -134,6 +134,21 @@ async def record_message(
     style: str = None,
 ):
     """Record a sent or received message in conversation_history."""
+    # Deduplicate received messages: skip if same text recorded recently
+    if direction == "received":
+        async with await get_db() as db:
+            cursor = await db.execute(
+                "SELECT id FROM conversation_history WHERE platform = ? AND contact_name = ? "
+                "AND direction = 'received' AND message_text = ? "
+                "AND created_at > datetime('now', '-1 hour')",
+                (platform, contact_name, message_text[:500]),
+            )
+            if await cursor.fetchone():
+                logger.debug(
+                    f"Skipping duplicate received message for {contact_name}"
+                )
+                return
+
     conv = await get_conversation_stage(platform, contact_name)
     stage = conv["stage"]
     turn_number = conv["total_turns"] + 1
