@@ -47,9 +47,13 @@ _dashboard_token = os.getenv("DASHBOARD_TOKEN")
 if not _dashboard_token:
     _dashboard_token = secrets.token_urlsafe(32)
     os.environ["DASHBOARD_TOKEN"] = _dashboard_token
+    token_path = Path.home() / ".boostrencontre" / ".dashboard_token"
+    token_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    token_path.write_text(_dashboard_token)
+    token_path.chmod(0o600)
     logger.warning(
-        f"Generated DASHBOARD_TOKEN: {_dashboard_token} "
-        "-- set DASHBOARD_TOKEN env var to use a fixed token"
+        "DASHBOARD_TOKEN not set in env. Generated random token for this session. "
+        f"Written to {token_path} — set DASHBOARD_TOKEN env var for persistence."
     )
 
 

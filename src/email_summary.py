@@ -12,6 +12,7 @@ import smtplib
 from datetime import date, datetime, timedelta, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from html import escape as h
 
 import aiosqlite
 
@@ -251,7 +252,7 @@ th {{ background: #f8f8f8; font-weight: 600; }}
     if stats:
         html += "<h2>Activite du jour</h2><table><tr><th>Plateforme</th><th>Messages</th><th>Reponses</th><th>Likes</th><th>Follows</th><th>Crushes</th><th>Taux</th></tr>"
         for platform, s in stats.items():
-            html += f"<tr><td><b>{platform.title()}</b></td><td>{s['messages']}</td><td>{s['replies']}</td><td>{s['likes']}</td><td>{s['follows']}</td><td>{s['crushes']}</td><td>{s['response_rate']}%</td></tr>"
+            html += f"<tr><td><b>{h(platform.title())}</b></td><td>{s['messages']}</td><td>{s['replies']}</td><td>{s['likes']}</td><td>{s['follows']}</td><td>{s['crushes']}</td><td>{s['response_rate']}%</td></tr>"
         html += "</table>"
     else:
         html += "<p>Aucune activite aujourd'hui.</p>"
@@ -261,20 +262,20 @@ th {{ background: #f8f8f8; font-weight: 600; }}
         html += f"<h2>Nouvelles conversations ({len(conversations['new'])})</h2><table><tr><th>Contact</th><th>Plateforme</th><th>Premier message</th></tr>"
         for c in conversations["new"][:10]:
             msg_preview = (c.get("message_text") or "")[:60]
-            html += f"<tr><td>{c['contact_name']}</td><td>{c['platform']}</td><td>{msg_preview}...</td></tr>"
+            html += f"<tr><td>{h(c['contact_name'])}</td><td>{h(c['platform'])}</td><td>{h(msg_preview)}...</td></tr>"
         html += "</table>"
 
     if conversations["active"]:
         html += f"<h2>Conversations actives ({len(conversations['active'])})</h2><table><tr><th>Contact</th><th>Plateforme</th><th>Tours aujourd'hui</th><th>Etape</th></tr>"
         for c in conversations["active"][:10]:
-            html += f"<tr><td>{c['contact_name']}</td><td>{c['platform']}</td><td>{c['turns_today']}</td><td><span class='badge'>{c['current_stage']}</span></td></tr>"
+            html += f"<tr><td>{h(c['contact_name'])}</td><td>{h(c['platform'])}</td><td>{c['turns_today']}</td><td><span class='badge'>{h(c['current_stage'])}</span></td></tr>"
         html += "</table>"
 
     # Alerts
     if alerts:
         html += "<h2>Alertes</h2>"
         for a in alerts:
-            html += f"<div class='alert'>⚠ <b>{a['platform'].title()}</b> — {a['action']}: {a['count']}/{a['limit']} ({a['pct']:.0f}% du quota)</div>"
+            html += f"<div class='alert'>⚠ <b>{h(a['platform'].title())}</b> — {h(a['action'])}: {a['count']}/{a['limit']} ({a['pct']:.0f}% du quota)</div>"
 
     # Campaigns
     if campaigns:
@@ -283,7 +284,7 @@ th {{ background: #f8f8f8; font-weight: 600; }}
             progress = f"{c['contacts_done']}/{c['max_contacts']}"
             funnel_parts = [f"{status}: {cnt}" for status, cnt in (c.get("funnel") or {}).items()]
             funnel_str = ", ".join(funnel_parts) if funnel_parts else "-"
-            html += f"<tr><td>{c['name']}</td><td>{c['platform']}</td><td>{progress}</td><td>{funnel_str}</td></tr>"
+            html += f"<tr><td>{h(c['name'])}</td><td>{h(c['platform'])}</td><td>{progress}</td><td>{h(funnel_str)}</td></tr>"
         html += "</table>"
 
     html += """<div class='footer'>BoostRencontre — Resume automatique</div>

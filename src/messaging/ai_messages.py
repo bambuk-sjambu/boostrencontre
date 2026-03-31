@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import re
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from ..constants import OPENAI_MODEL, OPENAI_MAX_TOKENS_MESSAGE
@@ -72,6 +73,21 @@ _BAD_PATTERNS = [
     "cette conversation est fictive", "ceci est un message genere",
     "je ne suis pas une vraie personne",
 ]
+
+
+def _sanitize_prompt_input(text: str, max_len: int = 800) -> str:
+    """Strip potential prompt injection markers from user-controlled text."""
+    text = text[:max_len]
+    text = text.replace('"""', '').replace("'''", "")
+    text = re.sub(
+        r'(?i)(ignore|forget|disregard)\s+(all\s+)?(previous|above|prior)\s+(instructions?|context|rules?)',
+        '[filtre]', text
+    )
+    text = re.sub(
+        r'(?i)(you are now|act as|pretend to be|your new role|tu es maintenant|agis comme)',
+        '[filtre]', text
+    )
+    return text
 
 
 def _sanitize_ai_message(text: str | None) -> str | None:
@@ -202,9 +218,10 @@ async def generate_first_message(profile_info: dict, style: str = "auto", approa
     # Adapt prompt based on whether we have bio info
     bio_section = ""
     if bio and len(bio) > 10:
+        clean_bio = _sanitize_prompt_input(bio)
         bio_section = f"""
 IMPORTANT : Voici ce que cette personne a ecrit dans sa presentation :
-\"\"\"{bio}\"\"\"
+\"\"\"{clean_bio}\"\"\"
 Tu DOIS faire reference a un element specifique de cette presentation dans ton message.
 Montre que tu as lu leur profil attentivement."""
     else:
@@ -213,7 +230,7 @@ Pas de presentation disponible. Base-toi sur le pseudo et le type de profil."""
 
     prefs_section = ""
     if preferences and len(preferences) > 10:
-        prefs_section = f"\nLeurs preferences/envies : {preferences}"
+        prefs_section = f"\nLeurs preferences/envies : {_sanitize_prompt_input(preferences)}"
 
     location_section = ""
     if location:
@@ -341,7 +358,7 @@ async def generate_reply_message(
 
 --- CONVERSATION COMPLETE AVEC {sender_name.upper()} ---
 \"\"\"
-{conversation_text[:3000]}
+{_sanitize_prompt_input(conversation_text, max_len=3000)}
 \"\"\"{desires_section}
 {recipient_block}{stage_block}{history_block}
 --- MISSION ---

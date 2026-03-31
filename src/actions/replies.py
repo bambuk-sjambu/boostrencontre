@@ -39,9 +39,9 @@ async def _replied_recently(platform_name, name, minutes=3) -> bool:
         cursor = await db.execute(
             "SELECT message_sent FROM activity_log "
             "WHERE platform = ? AND target_name = ? AND action IN ('auto_reply', 'sidebar_reply', 'reply') "
-            f"AND created_at > datetime('now', '-{minutes} minutes') "
+            "AND created_at > datetime('now', '-' || ? || ' minutes') "
             "ORDER BY created_at DESC LIMIT 1",
-            (platform_name, name)
+            (platform_name, name, int(minutes))
         )
         return bool(await cursor.fetchone())
 
