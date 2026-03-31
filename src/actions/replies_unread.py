@@ -12,6 +12,7 @@ from ..conversation_utils import (
 from ..rate_limiter import check_daily_limit, increment_daily_count
 from ..messaging.ai_messages import generate_reply_message, MY_PROFILE
 from ..messaging.conversation_manager import record_message as record_conv_message
+from ..chat_utils import detect_last_sender
 from .replies_helpers import (
     _log_rejection, _is_rejected, _replied_recently,
     _get_last_sent_message, _log_reply, _send_reply_in_editor,
@@ -727,7 +728,6 @@ async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> li
 
             chat_content = chat_data["text"]
 
-            from ..chat_utils import detect_last_sender
             last_sender = detect_last_sender(chat_content, my_pseudo, name)
             if last_sender == "me":
                 logger.info(f"  [{name}] Last message is OURS, skipping")
@@ -869,6 +869,18 @@ async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> li
                     continue
 
                 chat_content = chat_data["text"]
+
+                last_sender = detect_last_sender(chat_content, my_pseudo, iname)
+                if last_sender == "me":
+                    logger.info(f"  [{iname}] Last message is OURS in inbox, skipping")
+                    await platform.page.goto("https://app.wyylde.com/fr-fr/mailbox/inbox", timeout=10000)
+                    await asyncio.sleep(1)
+                    continue
+                if last_sender == "unknown":
+                    logger.warning(f"  [{iname}] Could not determine last sender in inbox, skipping")
+                    await platform.page.goto("https://app.wyylde.com/fr-fr/mailbox/inbox", timeout=10000)
+                    await asyncio.sleep(1)
+                    continue
 
                 if check_rejection(chat_content):
                     logger.info(f"  [{iname}] Rejection detected in inbox chat, skipping")

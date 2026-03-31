@@ -1,17 +1,9 @@
 import asyncio
 import logging
-from ..session_manager import browser_sessions
 from ..database import get_db
 from ..browser_utils import (
-    _safe_goto, find_tiptap_editor, type_in_editor, click_send_button,
-    read_chat_content, explore_profile_in_new_tab, debug_editors,
+    find_tiptap_editor, type_in_editor, click_send_button, debug_editors,
 )
-from ..conversation_utils import (
-    _human_delay, _human_delay_with_pauses, check_rejection, filter_ui_text, detect_our_last_message,
-)
-from ..rate_limiter import check_daily_limit, increment_daily_count
-from ..messaging.ai_messages import generate_reply_message, MY_PROFILE
-from ..messaging.conversation_manager import record_message as record_conv_message
 
 logger = logging.getLogger(__name__)
 

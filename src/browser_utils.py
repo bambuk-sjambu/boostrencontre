@@ -19,7 +19,11 @@ async def _human_type(page, message: str):
 
 
 async def _safe_goto(page, url, timeout=30000):
-    """Navigate safely -- SPA may abort but page still loads via React router."""
+    """Navigate safely -- SPA may abort but page still loads via React router.
+
+    Returns True if the page URL matches the target or /dashboard after attempts,
+    False if all 3 attempts failed to reach the expected URL.
+    """
     try:
         await page.goto(url, timeout=timeout, wait_until="domcontentloaded")
     except Exception:
@@ -37,6 +41,10 @@ async def _safe_goto(page, url, timeout=30000):
             await asyncio.sleep(5)
         except Exception:
             pass
+    success = url.rstrip("/") in page.url or "/dashboard" in page.url
+    if not success:
+        logger.warning(f"_safe_goto failed after 3 attempts: target={url}, current={page.url}")
+    return success
 
 
 async def find_tiptap_editor(page, min_width=80):

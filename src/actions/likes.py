@@ -2,7 +2,7 @@ import logging
 import random
 
 from ..session_manager import browser_sessions
-from ..database import get_db
+from ..database import get_db, dict_factory
 from ..rate_limiter import check_daily_limit, increment_daily_count
 from ..conversation_utils import _human_delay_with_pauses
 from ..scoring import score_profile, save_score
@@ -24,12 +24,13 @@ async def run_likes(platform_name: str, profile_filter: str = "") -> list:
     remaining = limit - current
 
     async with await get_db() as db:
+        db.row_factory = dict_factory
         cursor = await db.execute("SELECT * FROM settings WHERE id = 1")
         settings = await cursor.fetchone()
 
-    likes_count = settings[1] if settings else 50
-    delay_min = settings[3] if settings else 3
-    delay_max = settings[4] if settings else 8
+    likes_count = settings["likes_per_session"] if settings else 50
+    delay_min = settings["delay_min"] if settings else 3
+    delay_max = settings["delay_max"] if settings else 8
 
     # Cap to remaining daily quota
     likes_count = min(likes_count, remaining)

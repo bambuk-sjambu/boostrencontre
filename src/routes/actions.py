@@ -229,6 +229,9 @@ async def check_replies_now(platform: str):
         return JSONResponse(status_code=400, content={"error": "invalid_platform"})
     if platform not in bot_engine.browser_sessions:
         return JSONResponse(status_code=400, content={"error": "not_connected"})
+    logged_in = await bot_engine.check_login(platform)
+    if not logged_in:
+        return JSONResponse(status_code=401, content={"error": "not_logged_in", "message": f"Non connecte sur {platform}."})
     replied = await bot_engine.reply_to_unread_sidebar(platform)
     return {"status": "done", "replied": replied, "count": len(replied)}
 

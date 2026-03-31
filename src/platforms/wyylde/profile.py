@@ -14,7 +14,9 @@ from .selectors import (
     PROFILE_NAME,
     MAIN_CONTENT_MIN_X,
     MEMBER_LINK_MIN_X,
+    UI_WORDS,
 )
+from ...constants import DESIRES
 
 logger = logging.getLogger(__name__)
 
@@ -203,12 +205,7 @@ class WyyldeProfileMixin:
                 return result;
             }""", {
                 "profileName": PROFILE_NAME,
-                "uiWords": [
-                    'Suivre', 'Déconnexion', 'Adeptes', 'Adhésions', 'Témoignages',
-                    'Activités', 'Infos', 'Médias', 'Agenda', 'Communauté', 'Commentaires',
-                    'EN SAVOIR PLUS', 'Libre cette semaine', 'Préférences partagées',
-                    'DEMANDER À VOIR', 'CAMERA', 'Certifié',
-                ],
+                "uiWords": UI_WORDS,
             })
 
             info["name"] = data.get("name", "")
@@ -250,14 +247,7 @@ class WyyldeProfileMixin:
             return extractBaseProfile(mainText, mainDivs, params.profileName, params.uiWords);
         }""", {
             "profileName": PROFILE_NAME,
-            "uiWords": [
-                'Suivre', 'Déconnexion', 'Adeptes', 'Adhésions', 'Témoignages',
-                'Activités', 'Infos', 'Médias', 'Agenda', 'Communauté', 'Commentaires',
-                'EN SAVOIR PLUS', 'Libre cette semaine', 'Préférences partagées',
-                'DEMANDER À VOIR', 'Certifié', 'Lui écrire', 'Envoyer',
-                'Votre dernier coup de coeur', 'Chargement en cours', 'Participer',
-                'coup de coeur envoyé', 'Compléter mon profil',
-            ],
+            "uiWords": UI_WORDS,
         })
 
         # Step 3: Click Infos tab to read desires/preferences
@@ -296,12 +286,7 @@ class WyyldeProfileMixin:
             result.preferences = prefLines.join(' | ');
             result.fullInfos = infosText.substring(0, 1500);
             return result;
-        }""", [
-            'BDSM', 'Échangisme', 'Exhibition', 'Extreme', 'Feeling',
-            'Fétichisme', 'Gang bang', 'Hard', 'Papouilles', 'Pluralité', 'Vidéos',
-            'Voyeurisme', 'Massage', 'Tantra', 'Domination', 'Soumission',
-            'Candaulisme', 'Triolisme', 'Libertinage', 'Mélanisme',
-        ])
+        }""", DESIRES)
 
         # Step 5: Go back to Activites tab
         await self.page.evaluate("""() => {

@@ -211,7 +211,7 @@ async def test_human_delay_with_pauses_completes():
 async def test_human_delay_with_pauses_within_range():
     """Over several calls, delay should generally stay within a reasonable range."""
     import src.conversation_utils as cu
-    cu._action_counter = 0  # Reset counter to avoid long pause on first call
+    cu._action_counters.clear()  # Reset counters to avoid long pause on first call
     durations = []
     for _ in range(5):
         start = time.monotonic()

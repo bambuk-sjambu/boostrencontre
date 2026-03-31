@@ -12,13 +12,16 @@ async def _human_delay(min_s: float = 1.5, max_s: float = 4.0):
     await asyncio.sleep(delay)
 
 
-_action_counter = 0
+_action_counters: dict = {}
 
 
-async def _human_delay_with_pauses(min_s: float = 2.0, max_s: float = 5.0):
-    """Natural delay with random long pauses every 5-10 actions."""
-    global _action_counter
-    _action_counter += 1
+async def _human_delay_with_pauses(min_s: float = 2.0, max_s: float = 5.0, platform: str = "default"):
+    """Natural delay with random long pauses every 5-10 actions.
+
+    Counters are tracked per platform to prevent cross-platform interference.
+    """
+    _action_counters[platform] = _action_counters.get(platform, 0) + 1
+    _action_counter = _action_counters[platform]
 
     # Long pause every 5-10 actions (simulates a human looking at something else)
     if _action_counter % random.randint(5, 10) == 0:

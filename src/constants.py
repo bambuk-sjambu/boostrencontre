@@ -25,11 +25,22 @@ DESIRES = [
     "Échangisme",
     "BDSM",
     "Exhibition",
+    "Extreme",
     "Feeling",
     "Fétichisme",
     "Hard",
     "Papouilles",
     "Pluralité",
+    "Vidéos",
+    "Voyeurisme",
+    "Massage",
+    "Tantra",
+    "Domination",
+    "Soumission",
+    "Candaulisme",
+    "Triolisme",
+    "Libertinage",
+    "Mélanisme",
 ]
 
 # ─── Message styles ───
