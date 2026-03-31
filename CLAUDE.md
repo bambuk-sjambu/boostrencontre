@@ -284,3 +284,12 @@ sparc-coord (orchestrateur)
 - Pas de secrets dans le code
 - **JAMAIS `kill` sur un port** — ne jamais faire `lsof -ti:PORT | xargs kill` (risque de tuer Firefox ou d'autres apps)
 - Proposer le lancement des 7 agents au debut de chaque session
+
+## Documentation Obsidian
+
+- **Index projets DEV** : `/home/stef/SJA/Projets/Projets DEV - Index.md`
+- **Erreurs à ne pas reproduire** : `/home/stef/SJA/Ma base de connaissances/Erreurs à ne pas reproduire.md`
+- **Erreurs Claude** : `/home/stef/SJA/Ma base de connaissances/Erreurs Claude à ne pas reproduire.md`
+- **Doc projet** : `/home/stef/SJA/Projets/Boost Site de rencontres/`
+
+> Consulter les fichiers erreurs AVANT chaque session. Ajouter toute nouvelle erreur dès qu'elle est résolue.
