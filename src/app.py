@@ -181,8 +181,7 @@ async def index(request: Request):
         "delay_max": 8,
     }
 
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "logs": logs,
         "settings": settings,
     })
@@ -190,12 +189,12 @@ async def index(request: Request):
 
 @app.get("/home", response_class=HTMLResponse)
 async def home_page(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    return templates.TemplateResponse(request, "home.html")
 
 
 @app.get("/bmc", response_class=HTMLResponse)
 async def bmc_page(request: Request):
-    return templates.TemplateResponse("bmc.html", {"request": request})
+    return templates.TemplateResponse(request, "bmc.html")
 
 
 # --- Settings endpoint ---

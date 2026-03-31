@@ -24,7 +24,7 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 @router.get("/profile", response_class=HTMLResponse, include_in_schema=False)
 async def profile_page(request: Request):
-    return templates.TemplateResponse("profile.html", {"request": request})
+    return templates.TemplateResponse(request, "profile.html")
 
 
 @router.get("/api/user-profile")
