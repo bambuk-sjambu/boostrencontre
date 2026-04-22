@@ -24,8 +24,12 @@ class BasePlatform(ABC):
         pass
 
     @abstractmethod
-    async def like_profiles(self, count: int, delay_range: tuple) -> list:
-        """Like profiles and return list of liked profile info."""
+    async def like_profiles(self, count: int, delay_range: tuple, profile_filter: str = "") -> list:
+        """Like profiles and return list of liked profile info.
+
+        `profile_filter` is a platform-specific hint (e.g., Wyylde's desire tags).
+        Implementations that don't use it should accept and ignore it.
+        """
         pass
 
     @abstractmethod

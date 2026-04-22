@@ -3,8 +3,13 @@ import json
 import logging
 import subprocess
 from pathlib import Path
+
 from playwright.async_api import async_playwright
+from patchright.async_api import async_playwright as async_patchright
+
 from .platforms.tinder import TinderPlatform
+from .platforms.tinder.stealth import get_init_script as tinder_init_script
+from .platforms.tinder.stealth import get_launch_kwargs as tinder_launch_kwargs
 from .platforms.meetic import MeeticPlatform
 from .platforms.wyylde import WyyldePlatform
 from .database import get_db
@@ -22,15 +27,44 @@ PROFILE_DIR = Path.home() / ".boostrencontre" / "browser_profiles"
 browser_sessions = {}
 
 
-async def launch_browser(platform_name: str) -> dict:
-    if platform_name in browser_sessions:
-        return {"status": "already_open", "platform": platform_name}
+LEGACY_INIT_SCRIPT = """
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+    const originalQuery = window.navigator.permissions.query;
+    window.navigator.permissions.query = (parameters) =>
+        parameters.name === 'notifications'
+            ? Promise.resolve({ state: Notification.permission })
+            : originalQuery(parameters);
+    Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+    });
+    Object.defineProperty(navigator, 'languages', {
+        get: () => ['fr-FR', 'fr', 'en-US', 'en'],
+    });
+"""
 
-    profile_path = PROFILE_DIR / platform_name
-    profile_path.mkdir(parents=True, exist_ok=True, mode=0o700)
 
+async def _launch_tinder_context(profile_path: Path):
+    """Launch Tinder via patchright with full stealth + Cambodia-honest locale."""
+    pw = await async_patchright().start()
+    launch_kwargs = tinder_launch_kwargs()
+    context = await pw.chromium.launch_persistent_context(
+        user_data_dir=str(profile_path),
+        headless=False,
+        **launch_kwargs,
+    )
+    init_script = tinder_init_script()
+    if init_script.strip():
+        await context.add_init_script(init_script)
+    return pw, context
+
+
+async def _launch_legacy_context(profile_path: Path):
+    """Launch Wyylde/Meetic via stock playwright with legacy init script (unchanged)."""
     pw = await async_playwright().start()
-    browser = await pw.chromium.launch_persistent_context(
+    context = await pw.chromium.launch_persistent_context(
         user_data_dir=str(profile_path),
         headless=False,
         viewport={"width": 1920, "height": 1080},
@@ -44,25 +78,21 @@ async def launch_browser(platform_name: str) -> dict:
         ],
         ignore_default_args=["--enable-automation"],
     )
-    context = browser
+    await context.add_init_script(LEGACY_INIT_SCRIPT)
+    return pw, context
 
-    await context.add_init_script("""
-        Object.defineProperty(navigator, 'webdriver', { get: () => false });
-        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
-        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
-        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
-        const originalQuery = window.navigator.permissions.query;
-        window.navigator.permissions.query = (parameters) =>
-            parameters.name === 'notifications'
-                ? Promise.resolve({ state: Notification.permission })
-                : originalQuery(parameters);
-        Object.defineProperty(navigator, 'plugins', {
-            get: () => [1, 2, 3, 4, 5],
-        });
-        Object.defineProperty(navigator, 'languages', {
-            get: () => ['fr-FR', 'fr', 'en-US', 'en'],
-        });
-    """)
+
+async def launch_browser(platform_name: str) -> dict:
+    if platform_name in browser_sessions:
+        return {"status": "already_open", "platform": platform_name}
+
+    profile_path = PROFILE_DIR / platform_name
+    profile_path.mkdir(parents=True, exist_ok=True, mode=0o700)
+
+    if platform_name == "tinder":
+        pw, context = await _launch_tinder_context(profile_path)
+    else:
+        pw, context = await _launch_legacy_context(profile_path)
 
     platform_cls = PLATFORMS.get(platform_name)
     if not platform_cls:

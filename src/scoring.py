@@ -281,12 +281,18 @@ def _suggest_style(target: dict, score: int, details: dict) -> str:
     return "auto"
 
 
-async def score_profile(target_profile: dict, my_profile: dict | None = None) -> dict:
+async def score_profile(
+    target_profile: dict,
+    my_profile: dict | None = None,
+    platform: str | None = None,
+) -> dict:
     """Score a target profile on 100 points.
 
     Args:
         target_profile: Target's profile data (name, type, bio, age, location, etc.)
         my_profile: Our profile. If None, uses MY_PROFILE from ai_messages.
+        platform: Platform name. If "tinder", uses the Tinder-adapted scorer
+            (passions + distance + photos + bio) instead of the Wyylde one.
 
     Returns:
         Dict with total, grade, details, recommendation, suggested_style.
@@ -294,6 +300,9 @@ async def score_profile(target_profile: dict, my_profile: dict | None = None) ->
     if my_profile is None:
         from .messaging.ai_messages import MY_PROFILE
         my_profile = MY_PROFILE
+
+    if platform == "tinder":
+        return _score_tinder_profile(target_profile, my_profile)
 
     details = {}
     total = 0
@@ -332,6 +341,181 @@ async def score_profile(target_profile: dict, my_profile: dict | None = None) ->
     grade = "A" if total >= 80 else "B" if total >= 60 else "C" if total >= 40 else "D"
     recommendation = "message" if total >= 60 else "like_only" if total >= 40 else "skip"
     suggested = _suggest_style(target_profile, total, details)
+
+    return {
+        "total": total,
+        "grade": grade,
+        "details": details,
+        "recommendation": recommendation,
+        "suggested_style": suggested,
+    }
+
+
+def _parse_distance_km(distance_text: str) -> int | None:
+    """Extract kilometers from a Tinder distance string.
+
+    Examples:
+      "5 km away" -> 5
+      "less than a mile away" -> 1 (~1.6km, round down)
+      "15 miles away" -> 24 (15 * 1.6)
+    Returns None if unparseable.
+    """
+    if not distance_text:
+        return None
+    s = distance_text.lower().strip()
+    m = re.search(r"(\d+)\s*km", s)
+    if m:
+        return int(m.group(1))
+    m = re.search(r"(\d+)\s*mile", s)
+    if m:
+        return int(int(m.group(1)) * 1.6)
+    if "less than" in s:
+        return 1
+    return None
+
+
+def _score_tinder_passions(target_passions: list[str], my_interests: list[str]) -> tuple[int, dict]:
+    """Score passions overlap (0-30 points).
+
+    If we don't have explicit interests, any non-empty passion list gets a
+    baseline (profile effort signal).
+    """
+    target = [p.strip().lower() for p in target_passions or [] if p]
+    if not target:
+        return 0, {"count": 0, "overlap": [], "points": 0}
+
+    if my_interests:
+        mine = [i.strip().lower() for i in my_interests if i]
+        overlap = [p for p in target if p in mine]
+        points = min(len(overlap) * 10, 30)
+        if not overlap:
+            points = 5  # they listed passions, we just don't match — still effort
+        return points, {"count": len(target), "overlap": overlap, "points": points}
+
+    # No explicit interests on our side: effort signal only
+    points = min(10 + (len(target) - 1) * 2, 20)
+    return points, {"count": len(target), "overlap": [], "points": points}
+
+
+def _score_tinder_photos(photo_count: int) -> tuple[int, dict]:
+    """Score profile photo investment (0-25 points).
+
+    5 points per photo, capped at 5 photos. Tinder allows up to 9; 5+ is
+    a strong completeness signal.
+    """
+    n = max(0, int(photo_count or 0))
+    points = min(n * 5, 25)
+    return points, {"photos": n, "points": points}
+
+
+def _score_tinder_bio(bio: str) -> tuple[int, dict]:
+    """Score bio length as an effort proxy (0-15 points)."""
+    bio = (bio or "").strip()
+    if not bio:
+        return 0, {"bio": "missing", "points": 0}
+    if len(bio) < 30:
+        return 3, {"bio": "minimal", "points": 3}
+    if len(bio) < 100:
+        return 8, {"bio": "short", "points": 8}
+    if len(bio) < 300:
+        return 12, {"bio": "good", "points": 12}
+    return 15, {"bio": "rich", "points": 15}
+
+
+def _score_tinder_distance(distance_text: str) -> tuple[int, dict]:
+    """Score proximity (0-20 points).
+
+    Tighter radius than Wyylde per T1-B: Siem Reap is small. <5km = 20,
+    <15km = 12, <30km = 5, else 0. Unknown = neutral 5.
+    """
+    km = _parse_distance_km(distance_text)
+    if km is None:
+        return 5, {"distance": "unknown", "points": 5}
+    if km <= 5:
+        return 20, {"distance": f"{km}km", "points": 20}
+    if km <= 15:
+        return 12, {"distance": f"{km}km", "points": 12}
+    if km <= 30:
+        return 5, {"distance": f"{km}km", "points": 5}
+    return 0, {"distance": f"{km}km", "points": 0}
+
+
+def _score_tinder_age(target_age: str, my_age_range: tuple[int, int] | None) -> tuple[int, dict]:
+    """Score age fit (0-10 points).
+
+    If caller doesn't supply an age range, returns neutral 5.
+    """
+    try:
+        age = int(target_age) if target_age else None
+    except (ValueError, TypeError):
+        age = None
+    if age is None or not my_age_range:
+        return 5, {"age": "unknown", "points": 5}
+    low, high = my_age_range
+    if low <= age <= high:
+        return 10, {"age": age, "points": 10, "match": "in_range"}
+    if low - 5 <= age <= high + 5:
+        return 5, {"age": age, "points": 5, "match": "near_range"}
+    return 0, {"age": age, "points": 0, "match": "out_of_range"}
+
+
+def _suggest_tinder_style(target: dict, total: int, details: dict) -> str:
+    """Style hint for Tinder: simpler than Wyylde — no desire taxonomy."""
+    bio = (target.get("bio", "") or "").lower()
+    passions_detail = details.get("passions", {})
+    overlap = passions_detail.get("overlap", [])
+
+    fun_words = ["laugh", "humor", "funny", "joke", "fun", "rigol", "drôle", "drole"]
+    if any(w in bio for w in fun_words):
+        return "humoristique"
+
+    travel_words = ["travel", "voyage", "backpack", "digital nomad", "expat"]
+    if any(w in bio for w in travel_words) or "travel" in overlap:
+        return "aventurier"
+
+    intellectual_words = ["book", "read", "philosophy", "art", "museum", "film"]
+    if any(w in bio for w in intellectual_words):
+        return "intellectuel"
+
+    if total >= 75:
+        return "romantique"
+    return "auto"
+
+
+def _score_tinder_profile(target: dict, my_profile: dict) -> dict:
+    """Tinder-adapted 100-point score.
+
+    Breakdown: passions (30) + photos (25) + distance (20) + bio (15) + age (10).
+    """
+    details = {}
+    total = 0
+
+    my_interests = my_profile.get("interests", []) or my_profile.get("passions", []) or []
+
+    pts, d = _score_tinder_passions(target.get("passions", []) or [], my_interests)
+    total += pts
+    details["passions"] = d
+
+    pts, d = _score_tinder_photos(target.get("photo_count", 0))
+    total += pts
+    details["photos"] = d
+
+    pts, d = _score_tinder_distance(target.get("distance", "") or "")
+    total += pts
+    details["distance"] = d
+
+    pts, d = _score_tinder_bio(target.get("bio", "") or "")
+    total += pts
+    details["bio"] = d
+
+    my_age_range = my_profile.get("age_range")
+    pts, d = _score_tinder_age(target.get("age", "") or "", my_age_range)
+    total += pts
+    details["age"] = d
+
+    grade = "A" if total >= 80 else "B" if total >= 60 else "C" if total >= 40 else "D"
+    recommendation = "message" if total >= 60 else "like_only" if total >= 40 else "skip"
+    suggested = _suggest_tinder_style(target, total, details)
 
     return {
         "total": total,

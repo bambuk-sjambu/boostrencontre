@@ -66,7 +66,7 @@ async def run_messages(platform_name: str, style: str = "auto") -> list:
                 profile_info["name"] = match["name"]
 
             # Score the profile before messaging
-            score_result = await score_profile(profile_info)
+            score_result = await score_profile(profile_info, platform=platform_name)
             await save_score(platform_name, match["name"], score_result,
                              target_type=profile_info.get("type", ""))
             logger.info(f"Score {match['name']}: {score_result['total']}/100 "
@@ -102,6 +102,13 @@ async def run_messages(platform_name: str, style: str = "auto") -> list:
 
 
 async def message_discussions(platform_name: str, count: int = 5, style: str = "auto") -> list:
+    if platform_name != "wyylde":
+        logger.warning(
+            f"message_discussions uses the Wyylde chat sidebar — not applicable to {platform_name}. "
+            f"Use run_messages for match-based platforms."
+        )
+        return []
+
     session = browser_sessions.get(platform_name)
     if not session:
         return []
@@ -214,6 +221,12 @@ async def message_discussions(platform_name: str, count: int = 5, style: str = "
 async def message_from_search(platform_name: str, count: int = 5, style: str = "auto",
                               profile_type: str = "", desires: list = None,
                               approach_template: str = "") -> list:
+    if platform_name != "wyylde":
+        logger.warning(
+            f"message_from_search uses the Wyylde search page — not applicable to {platform_name}."
+        )
+        return []
+
     session = browser_sessions.get(platform_name)
     if not session:
         return []

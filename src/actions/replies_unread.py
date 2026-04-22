@@ -27,6 +27,13 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────
 
 async def check_and_reply_unread(platform_name: str, style: str = "auto") -> list:
+    if platform_name == "tinder":
+        from .replies_tinder import reply_to_tinder_matches
+        return await reply_to_tinder_matches(platform_name, style=style)
+    if platform_name != "wyylde":
+        logger.warning(f"check_and_reply_unread not implemented for {platform_name}")
+        return []
+
     session = browser_sessions.get(platform_name)
     if not session:
         return []
@@ -417,6 +424,13 @@ async def check_and_reply_unread(platform_name: str, style: str = "auto") -> lis
 # ──────────────────────────────────────────────────────────────
 
 async def reply_to_unread_sidebar(platform_name: str, style: str = "auto") -> list:
+    if platform_name == "tinder":
+        from .replies_tinder import reply_to_tinder_matches
+        return await reply_to_tinder_matches(platform_name, style=style)
+    if platform_name != "wyylde":
+        logger.warning(f"reply_to_unread_sidebar not implemented for {platform_name}")
+        return []
+
     session = browser_sessions.get(platform_name)
     if not session:
         return []

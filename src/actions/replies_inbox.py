@@ -17,6 +17,13 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────
 
 async def reply_to_inbox(platform_name: str, style: str = "auto") -> list:
+    if platform_name == "tinder":
+        from .replies_tinder import reply_to_tinder_matches
+        return await reply_to_tinder_matches(platform_name, style=style)
+    if platform_name != "wyylde":
+        logger.warning(f"reply_to_inbox not implemented for {platform_name}")
+        return []
+
     session = browser_sessions.get(platform_name)
     if not session:
         return []
@@ -106,6 +113,13 @@ async def reply_to_inbox(platform_name: str, style: str = "auto") -> list:
 
 
 async def reply_to_sidebar(platform_name: str, style: str = "auto") -> list:
+    if platform_name != "wyylde":
+        logger.warning(
+            f"reply_to_sidebar uses the Wyylde chat sidebar — not applicable to {platform_name}. "
+            f"For Tinder, use reply_to_inbox which dispatches to the match-based flow."
+        )
+        return []
+
     session = browser_sessions.get(platform_name)
     if not session:
         return []

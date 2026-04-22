@@ -36,10 +36,9 @@ async def run_likes(platform_name: str, profile_filter: str = "") -> list:
     likes_count = min(likes_count, remaining)
 
     platform = session["platform"]
-    if hasattr(platform.like_profiles, '__code__') and 'profile_filter' in platform.like_profiles.__code__.co_varnames:
-        liked = await platform.like_profiles(likes_count, (delay_min, delay_max), profile_filter=profile_filter)
-    else:
-        liked = await platform.like_profiles(likes_count, (delay_min, delay_max))
+    liked = await platform.like_profiles(
+        likes_count, (delay_min, delay_max), profile_filter=profile_filter
+    )
 
     async with await get_db() as db:
         for profile in liked:
@@ -52,7 +51,7 @@ async def run_likes(platform_name: str, profile_filter: str = "") -> list:
     # Score liked profiles for analytics and future prioritization
     for profile in liked:
         try:
-            score_result = await score_profile(profile)
+            score_result = await score_profile(profile, platform=platform_name)
             await save_score(platform_name, profile.get("name", "Unknown"),
                              score_result, target_type=profile.get("type", ""))
             profile["score"] = score_result["total"]

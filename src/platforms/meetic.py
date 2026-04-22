@@ -32,7 +32,7 @@ class MeeticPlatform(BasePlatform):
         except Exception:
             return False
 
-    async def like_profiles(self, count: int, delay_range: tuple) -> list:
+    async def like_profiles(self, count: int, delay_range: tuple, profile_filter: str = "") -> list:
         liked = []
 
         # Go to shuffle/discovery

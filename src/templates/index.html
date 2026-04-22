@@ -269,8 +269,14 @@
             <div class="actions" style="margin-top:10px;">
                 <button class="btn btn-danger" style="background:#4a1a4a; color:#ff6bff;" onclick="runSearchMessages('wyylde')">Messages Recherche - Wyylde</button>
                 <button class="btn btn-danger" style="background:#1a2a4a; color:#6baaff;" onclick="runReplies('wyylde')">Repondre Non-Lus Sidebar - Wyylde</button>
+                <button class="btn btn-danger" style="background:#1a2a4a; color:#6baaff;" onclick="runReplies('tinder')">Repondre Matches - Tinder</button>
                 <button id="autoReplyBtn" class="btn btn-danger" style="background:#2a6a1a; color:#fff;" onclick="toggleAutoReply('wyylde')">Veille Auto-Reply - Wyylde</button>
                 <a href="/profile" class="btn btn-secondary" style="text-decoration:none;">Mon Profil IA</a>
+            </div>
+            <div class="actions" style="margin-top:10px; padding-top:10px; border-top:1px solid #3a3a5a;">
+                <span style="color:#aaa; font-size:0.9em; align-self:center;">Anti-detection :</span>
+                <button class="btn btn-secondary" style="background:#1a3a2a; color:#6bff9a;" onclick="runStealthAudit('tinder')">Audit Fingerprint - Tinder</button>
+                <span id="stealth-audit-status" style="color:#6bff9a; font-size:0.9em; align-self:center;"></span>
             </div>
         </div>
 
@@ -719,6 +725,26 @@
                 }
                 location.reload();
             }
+        }
+
+        async function runStealthAudit(platform) {
+            const statusEl = document.getElementById('stealth-audit-status');
+            statusEl.textContent = 'Audit en cours...';
+            statusEl.style.color = '#ffaa6b';
+            const r = await api('/api/stealth-audit/' + platform, 'POST');
+            if (!r) { statusEl.textContent = ''; return; }
+            if (r.error) {
+                statusEl.style.color = '#ff6b6b';
+                statusEl.textContent = 'Echec: ' + (r.message || r.error);
+                showMsg(r.message || r.error, 'error');
+                return;
+            }
+            const score = r.bot_score != null ? r.bot_score : '?';
+            const verdict = r.verdict || '?';
+            const color = r.passed ? '#6bff9a' : '#ff6b6b';
+            statusEl.style.color = color;
+            statusEl.textContent = 'Score bot ' + score + '% / ' + verdict;
+            showMsg('Audit: score bot=' + score + '% — ' + verdict, r.passed ? 'success' : 'error');
         }
 
         // --- Template management ---

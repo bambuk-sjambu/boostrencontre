@@ -23,6 +23,7 @@ from .routes import stats as stats_routes
 from .routes import campaigns as campaigns_routes
 from .routes import conversations as conversations_routes
 from .routes import email_summary as email_summary_routes
+from .routes import stealth as stealth_routes
 from .routes.deps import init_platforms
 
 load_dotenv()
@@ -148,6 +149,7 @@ app.include_router(stats_routes.router, prefix="/api")
 app.include_router(campaigns_routes.router, prefix="/api")
 app.include_router(conversations_routes.router, prefix="/api")
 app.include_router(email_summary_routes.router, prefix="/api")
+app.include_router(stealth_routes.router, prefix="/api")
 
 # --- Debug routes: only if DEBUG=true ---
 if os.getenv("DEBUG", "false").lower() == "true":
