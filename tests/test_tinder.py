@@ -549,6 +549,61 @@ def test_stealth_audit_endpoint_registered():
     assert any("stealth-audit" in p for p in paths)
 
 
+def test_platform_detail_route_registered():
+    """Per-platform detail page must be routable for tinder/wyylde/meetic."""
+    from src.app import app
+    paths = [getattr(r, "path", "") for r in app.routes]
+    assert "/platform/{name}" in paths
+
+
+@pytest.mark.asyncio
+async def test_platform_detail_renders_tinder(tmp_path, monkeypatch):
+    """Platform detail page must render without errors for tinder."""
+    from fastapi.testclient import TestClient
+    from src.app import app
+    import src.database as db_mod
+
+    # Use temp DB so route has valid tables
+    db_path = str(tmp_path / "test_platform_detail.db")
+    original = db_mod.DB_PATH
+    db_mod.DB_PATH = db_path
+
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("CREATE TABLE activity_log (id INTEGER PRIMARY KEY, platform TEXT, action TEXT, target_name TEXT, message_sent TEXT, style TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        await db.execute("CREATE TABLE profile_scores (platform TEXT, target_name TEXT, score INTEGER, grade TEXT, PRIMARY KEY (platform, target_name))")
+        await db.execute("CREATE TABLE daily_counters (date TEXT, platform TEXT, action TEXT, count INTEGER DEFAULT 0, PRIMARY KEY (date, platform, action))")
+        await db.commit()
+
+    try:
+        with TestClient(app) as client:
+            resp = client.get("/platform/tinder")
+            assert resp.status_code == 200
+            assert "Tinder" in resp.text
+            assert "Version stealth" in resp.text
+            assert "Audit fingerprint" in resp.text
+    finally:
+        db_mod.DB_PATH = original
+
+
+@pytest.mark.asyncio
+async def test_platform_detail_404_on_unknown(tmp_path):
+    """Unknown platform name should 404."""
+    from fastapi.testclient import TestClient
+    from src.app import app
+    import src.database as db_mod
+
+    db_path = str(tmp_path / "test_pd_404.db")
+    original = db_mod.DB_PATH
+    db_mod.DB_PATH = db_path
+
+    try:
+        with TestClient(app) as client:
+            resp = client.get("/platform/bumble")
+            assert resp.status_code == 404
+    finally:
+        db_mod.DB_PATH = original
+
+
 # ---------------------------------------------------------------------------
 # Session manager — Tinder uses patchright, others unchanged
 # ---------------------------------------------------------------------------

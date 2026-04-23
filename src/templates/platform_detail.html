@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ platform|title }} — BoostRencontre</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: #0a0a15; color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; background: #1a1a2e; border-radius: 10px;
+            margin-bottom: 20px; border: 1px solid #2a2a40;
+        }
+        header h1 { margin: 0; font-size: 1.8em; }
+        header a { color: #6baaff; text-decoration: none; font-size: 0.9em; }
+        header a:hover { text-decoration: underline; }
+        .platform-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 12px;
+            font-size: 0.85em; font-weight: 600; margin-left: 10px;
+        }
+        .badge-tinder { background: #fe3c72; color: white; }
+        .badge-wyylde { background: #ec65b9; color: white; }
+        .badge-meetic { background: #4a90e2; color: white; }
+
+        h2 { font-size: 1.2em; color: #aaa; margin: 25px 0 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+        .card { background: #1a1a2e; border: 1px solid #2a2a40; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        .status {
+            display: inline-block; padding: 4px 10px; border-radius: 4px;
+            font-size: 0.85em; font-weight: 600;
+        }
+        .status.connected { background: #1a3a2a; color: #6bff9a; }
+        .status.disconnected { background: #3a1a1a; color: #ff6b6b; }
+
+        .btn {
+            padding: 10px 18px; border: none; border-radius: 6px;
+            font-size: 0.95em; cursor: pointer; transition: all 0.2s;
+            font-weight: 500;
+        }
+        .btn-primary { background: #3a3a5a; color: white; }
+        .btn-primary:hover { background: #4a4a7a; }
+        .btn-success { background: #1a5a3a; color: #6bff9a; }
+        .btn-success:hover { background: #2a7a4a; }
+        .btn-danger { background: #5a1a1a; color: #ff9b9b; }
+        .btn-danger:hover { background: #7a2a2a; }
+        .btn-secondary { background: #2a2a4a; color: #6baaff; }
+        .btn-secondary:hover { background: #3a3a6a; }
+
+        .stat-card {
+            background: #0f0f1a; border: 1px solid #2a2a40;
+            border-radius: 8px; padding: 14px;
+        }
+        .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.6em; font-weight: 600; margin: 5px 0; color: #e0e0e0; }
+        .stat-limit { color: #888; font-size: 0.8em; }
+
+        .progress {
+            height: 6px; background: #2a2a40; border-radius: 3px; overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #6bff9a, #ffaa6b); transition: width 0.3s; }
+        .progress-fill.warn { background: #ffaa6b; }
+        .progress-fill.danger { background: #ff6b6b; }
+
+        .config-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid #2a2a40;
+        }
+        .config-row:last-child { border: 0; }
+        .config-label { color: #aaa; font-size: 0.9em; }
+        .config-value { color: #e0e0e0; font-family: 'Courier New', monospace; }
+        .config-value code { background: #0f0f1a; padding: 2px 8px; border-radius: 4px; }
+
+        select, input[type=number] {
+            background: #0f0f1a; color: #e0e0e0; border: 1px solid #3a3a5a;
+            border-radius: 4px; padding: 6px 10px; font-size: 0.9em;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2a2a40; }
+        th { color: #888; font-weight: 500; text-transform: uppercase; font-size: 0.75em; letter-spacing: 0.05em; }
+        tbody tr:hover { background: #20203a; }
+        .action-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; font-weight: 600; }
+        .action-like { background: #1a3a2a; color: #6bff9a; }
+        .action-message, .action-sidebar_msg, .action-search_msg { background: #2a2a4a; color: #6baaff; }
+        .action-reply, .action-auto_reply, .action-sidebar_reply { background: #3a2a4a; color: #ff6bff; }
+        .action-rejected { background: #3a1a1a; color: #ff6b6b; }
+        .action-follow, .action-crush { background: #4a3a1a; color: #ffaa6b; }
+
+        .grade { display: inline-block; width: 22px; text-align: center; padding: 2px; border-radius: 4px; font-weight: 600; font-size: 0.8em; }
+        .grade-A { background: #1a5a3a; color: #6bff9a; }
+        .grade-B { background: #1a3a5a; color: #6baaff; }
+        .grade-C { background: #4a3a1a; color: #ffaa6b; }
+        .grade-D { background: #5a1a1a; color: #ff9b9b; }
+
+        .audit-result { margin-top: 10px; padding: 12px; border-radius: 6px; font-size: 0.9em; }
+        .audit-pending { background: #2a2a40; color: #aaa; }
+        .audit-pass { background: #1a3a2a; color: #6bff9a; }
+        .audit-fail { background: #3a1a1a; color: #ff9b9b; }
+
+        #toast {
+            position: fixed; top: 20px; right: 20px; padding: 12px 20px;
+            border-radius: 6px; font-weight: 500; display: none; z-index: 1000;
+            max-width: 400px;
+        }
+        .toast-info { background: #2a2a4a; color: #6baaff; }
+        .toast-success { background: #1a3a2a; color: #6bff9a; }
+        .toast-error { background: #3a1a1a; color: #ff9b9b; }
+    </style>
+</head>
+<body>
+    <div id="toast"></div>
+
+    <div class="container">
+        <header>
+            <h1>
+                {{ platform|title }}
+                <span class="platform-badge badge-{{ platform }}">{{ platform }}</span>
+            </h1>
+            <nav>
+                <a href="/">← Dashboard principal</a>
+            </nav>
+        </header>
+
+        <!-- Connection -->
+        <section>
+            <h2>Connexion</h2>
+            <div class="card">
+                <div class="config-row">
+                    <div>
+                        <span class="config-label">Statut</span>
+                        <span class="status {{ 'connected' if connected else 'disconnected' }}" id="conn-status">
+                            {{ 'Connecté' if connected else 'Déconnecté' }}
+                        </span>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openBrowser()">Ouvrir le navigateur</button>
+                        <button class="btn btn-secondary" onclick="checkLogin()">Vérifier login</button>
+                        <button class="btn btn-danger" onclick="closeBrowser()">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings -->
+        <section>
+            <h2>Paramétrage</h2>
+            <div class="card">
+                {% if platform == 'tinder' %}
+                <div class="config-row">
+                    <span class="config-label">Version stealth</span>
+                    <span class="config-value"><code>{{ tinder_config.stealth_version }}</code></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Locale navigateur</span>
+                    <span class="config-value"><code>{{ tinder_config.locale }}</code></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Timezone</span>
+                    <span class="config-value"><code>{{ tinder_config.timezone }}</code></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Genre (ajuste le cap de swipes)</span>
+                    <span class="config-value">
+                        <code>{{ tinder_config.gender }}</code>
+                        <span class="stat-limit">(cap actuel: {{ tinder_config.swipe_cap }}/12h)</span>
+                    </span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Changer le genre</span>
+                    <span>
+                        <code>export MY_GENDER=male</code> ou <code>female</code>, puis redémarrer le serveur
+                    </span>
+                </div>
+                {% elif platform == 'wyylde' %}
+                <div class="config-row">
+                    <span class="config-label">Locale</span>
+                    <span class="config-value"><code>fr-FR</code></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Member ID extraction</span>
+                    <span class="config-value"><code>{{ "✓ WYYLDE_MEMBER_ID configuré" if true else "✗ à configurer" }}</code></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Rate limit</span>
+                    <span class="config-value">Calendar-day (reset à minuit UTC)</span>
+                </div>
+                {% else %}
+                <div class="config-row">
+                    <span class="config-label">Locale</span>
+                    <span class="config-value"><code>fr-FR</code></span>
+                </div>
+                <div class="config-row">
+                    <span class="config-label">Statut implémentation</span>
+                    <span class="config-value" style="color:#ffaa6b;">Base uniquement (stub-level)</span>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section>
+            <h2>Rendus statistiques</h2>
+
+            <h3 style="font-size:0.95em; color:#888; margin:15px 0 8px;">Compteurs temps réel</h3>
+            <div class="grid-4">
+                {% for action in ['likes', 'messages', 'replies'] %}
+                {% if action in rate_stats %}
+                {% set s = rate_stats[action] %}
+                <div class="stat-card">
+                    <div class="stat-label">{{ action|capitalize }}</div>
+                    <div class="stat-value">{{ s.count }} <span class="stat-limit">/ {{ s.limit }}</span></div>
+                    <div class="stat-limit">{{ s.window }}</div>
+                    <div class="progress">
+                        <div class="progress-fill{% if s.count > s.limit * 0.8 %} danger{% elif s.count > s.limit * 0.5 %} warn{% endif %}"
+                             style="width: {{ (100 if s.limit == 0 else (s.count / s.limit * 100)) | round(0) | int }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <div class="stat-card">
+                    <div class="stat-label">Rejets total</div>
+                    <div class="stat-value">{{ totals.rejections or 0 }}</div>
+                    <div class="stat-limit">signal d'arrêt</div>
+                </div>
+            </div>
+
+            <h3 style="font-size:0.95em; color:#888; margin:20px 0 8px;">Totaux historiques</h3>
+            <div class="grid-4">
+                <div class="stat-card">
+                    <div class="stat-label">Actions totales</div>
+                    <div class="stat-value">{{ totals.total or 0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Likes totaux</div>
+                    <div class="stat-value">{{ totals.likes or 0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Messages envoyés</div>
+                    <div class="stat-value">{{ totals.messages or 0 }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Réponses envoyées</div>
+                    <div class="stat-value">{{ totals.replies or 0 }}</div>
+                </div>
+            </div>
+
+            {% if grade_dist %}
+            <h3 style="font-size:0.95em; color:#888; margin:20px 0 8px;">Distribution des scores</h3>
+            <div class="grid-4">
+                {% for g in grade_dist %}
+                <div class="stat-card">
+                    <div class="stat-label">Grade {{ g.grade }}</div>
+                    <div class="stat-value">
+                        <span class="grade grade-{{ g.grade }}">{{ g.grade }}</span>
+                        {{ g.count }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Actions / Decisions -->
+        <section>
+            <h2>Prises de décision / Actions</h2>
+            <div class="card">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:15px;">
+                    <span style="color:#aaa; font-size:0.9em;">Style IA :</span>
+                    <select id="style-select">
+                        <option value="auto">auto (IA choisit)</option>
+                        <option value="romantique">romantique</option>
+                        <option value="direct_sexe">direct / sexe</option>
+                        <option value="humoristique">humoristique</option>
+                        <option value="intellectuel">intellectuel</option>
+                        <option value="aventurier">aventurier</option>
+                        <option value="mystérieux">mystérieux</option>
+                        <option value="complice">complice</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="runAction('likes')">{{ 'Swiper' if platform == 'tinder' else 'Liker' }}</button>
+                    <button class="btn btn-primary" onclick="runAction('messages')">Envoyer messages IA</button>
+                    {% if platform == 'tinder' %}
+                    <button class="btn btn-primary" onclick="runAction('replies')">Répondre aux matches</button>
+                    {% elif platform == 'wyylde' %}
+                    <button class="btn btn-primary" onclick="runAction('replies')">Répondre aux non-lus</button>
+                    <button class="btn btn-secondary" onclick="runAction('message-discussions')">Messages discussions</button>
+                    <button class="btn btn-secondary" onclick="runAction('message-search')">Messages recherche</button>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if platform == 'tinder' %}
+            <div class="card" style="margin-top:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="color:#6bff9a; font-weight:500;">Anti-détection — Audit fingerprint</div>
+                        <div style="color:#888; font-size:0.85em; margin-top:5px;">
+                            Gate obligatoire avant dogfooding. Score bot ≤ 10% = PASS.
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="runStealthAudit()">Lancer l'audit</button>
+                </div>
+                <div id="audit-result" class="audit-result audit-pending" style="display:none;">
+                    Audit en cours...
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Recent activity -->
+        <section>
+            <h2>Activité récente (30 dernières)</h2>
+            <div class="card" style="padding:0;">
+                {% if activity %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Quand</th>
+                            <th>Action</th>
+                            <th>Cible</th>
+                            <th>Score</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in activity %}
+                        <tr>
+                            <td>{{ a.created_at }}</td>
+                            <td><span class="action-tag action-{{ a.action }}">{{ a.action }}</span></td>
+                            <td>{{ a.target_name or '-' }}</td>
+                            <td>
+                                {% if a.score_grade %}
+                                <span class="grade grade-{{ a.score_grade }}">{{ a.score_grade }}</span>
+                                {{ a.score_value }}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td style="color:#888; max-width:400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                {{ a.message_sent or '' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div style="padding:20px; color:#888; text-align:center;">
+                    Pas encore d'activité sur {{ platform }}.
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const PLATFORM = "{{ platform }}";
+
+        function toast(msg, type='info') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast-' + type;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 4000);
+        }
+
+        async function api(url, method='GET', body=null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            try {
+                const r = await fetch(url, opts);
+                return await r.json();
+            } catch (e) {
+                toast('Erreur réseau : ' + e.message, 'error');
+                return null;
+            }
+        }
+
+        async function openBrowser() {
+            toast('Ouverture du navigateur ' + PLATFORM + '...', 'info');
+            const r = await api('/api/browser/' + PLATFORM, 'POST');
+            if (r && (r.status === 'opened' || r.status === 'opening' || r.status === 'already_open')) {
+                toast(r.message || 'Navigateur ouvert', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else if (r && r.error) {
+                toast(r.message || r.error, 'error');
+            }
+        }
+
+        async function checkLogin() {
+            const r = await api('/api/check-login/' + PLATFORM);
+            if (r && r.logged_in) toast('Logged in sur ' + PLATFORM + ' ✓', 'success');
+            else toast('Non connecté sur ' + PLATFORM, 'error');
+        }
+
+        async function closeBrowser() {
+            const r = await api('/api/close/' + PLATFORM, 'POST');
+            if (r && r.status === 'closed') {
+                toast('Navigateur fermé', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+
+        async function runAction(action) {
+            const style = document.getElementById('style-select').value;
+            const body = action === 'likes' ? {} : { style };
+            toast('Lancement ' + action + '...', 'info');
+            const r = await api('/api/' + action + '/' + PLATFORM, 'POST', body);
+            if (!r) return;
+            if (r.error) { toast(r.message || r.error, 'error'); return; }
+            toast(r.message || 'Action démarrée', 'success');
+        }
+
+        async function runStealthAudit() {
+            const el = document.getElementById('audit-result');
+            el.style.display = 'block';
+            el.className = 'audit-result audit-pending';
+            el.textContent = 'Audit en cours (~10s)...';
+            const r = await api('/api/stealth-audit/' + PLATFORM, 'POST');
+            if (!r) { el.className = 'audit-result audit-fail'; el.textContent = 'Erreur réseau'; return; }
+            if (r.error) {
+                el.className = 'audit-result audit-fail';
+                el.textContent = 'Erreur : ' + (r.message || r.error);
+                return;
+            }
+            el.className = 'audit-result ' + (r.passed ? 'audit-pass' : 'audit-fail');
+            const summary = r.summary || {};
+            el.innerHTML = '<strong>' + r.verdict + '</strong><br>' +
+                'Score bot : <strong>' + r.bot_score + '%</strong><br>' +
+                'Checks : ' + summary.passed_checks + ' passed, ' +
+                summary.failed_checks + ' failed, ' + summary.warn_checks + ' warn / ' +
+                summary.total + ' total<br>' +
+                '<small style="color:#888;">Source : ' + r.source + '</small>';
+        }
+    </script>
+</body>
+</html>

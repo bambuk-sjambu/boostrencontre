@@ -193,6 +193,74 @@ async def index(request: Request):
     })
 
 
+@app.get("/platform/{name}", response_class=HTMLResponse)
+async def platform_detail(name: str, request: Request):
+    """Per-platform detail page: settings + stats + actions + recent activity."""
+    if name not in ALLOWED_PLATFORMS:
+        return HTMLResponse(status_code=404, content="<h1>Unknown platform</h1>")
+
+    from . import bot_engine
+    from .rate_limiter import get_daily_stats
+    from .platforms.tinder.stealth import (
+        STEALTH_VERSION as TINDER_STEALTH_VERSION,
+        TINDER_LOCALE, TINDER_TIMEZONE,
+    )
+    from .rate_limiter import _MY_GENDER, _TINDER_SWIPE_CAP
+
+    async with await get_db() as db:
+        db.row_factory = dict_factory
+        cursor = await db.execute(
+            "SELECT a.*, ps.score as score_value, ps.grade as score_grade "
+            "FROM activity_log a "
+            "LEFT JOIN profile_scores ps ON a.platform = ps.platform "
+            "AND a.target_name = ps.target_name "
+            "WHERE a.platform = ? ORDER BY a.created_at DESC LIMIT 30",
+            (name,),
+        )
+        activity = await cursor.fetchall()
+
+        cursor = await db.execute(
+            "SELECT COUNT(*) as total, "
+            "SUM(CASE WHEN action='like' THEN 1 ELSE 0 END) as likes, "
+            "SUM(CASE WHEN action IN ('message','sidebar_msg','search_msg') THEN 1 ELSE 0 END) as messages, "
+            "SUM(CASE WHEN action IN ('reply','auto_reply','sidebar_reply') THEN 1 ELSE 0 END) as replies, "
+            "SUM(CASE WHEN action='rejected' THEN 1 ELSE 0 END) as rejections "
+            "FROM activity_log WHERE platform = ?",
+            (name,),
+        )
+        totals = await cursor.fetchone()
+
+        cursor = await db.execute(
+            "SELECT grade, COUNT(*) as count FROM profile_scores "
+            "WHERE platform = ? GROUP BY grade ORDER BY grade",
+            (name,),
+        )
+        grade_dist = await cursor.fetchall()
+
+    rate_stats = await get_daily_stats(name)
+    connected = name in bot_engine.browser_sessions
+
+    context = {
+        "platform": name,
+        "connected": connected,
+        "activity": activity,
+        "totals": totals or {"total": 0, "likes": 0, "messages": 0, "replies": 0, "rejections": 0},
+        "grade_dist": grade_dist,
+        "rate_stats": rate_stats,
+    }
+
+    if name == "tinder":
+        context["tinder_config"] = {
+            "stealth_version": TINDER_STEALTH_VERSION,
+            "locale": TINDER_LOCALE,
+            "timezone": TINDER_TIMEZONE,
+            "gender": _MY_GENDER,
+            "swipe_cap": _TINDER_SWIPE_CAP,
+        }
+
+    return templates.TemplateResponse(request, "platform_detail.html", context)
+
+
 @app.get("/home", response_class=HTMLResponse)
 async def home_page(request: Request):
     return templates.TemplateResponse(request, "home.html")

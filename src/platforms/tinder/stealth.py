@@ -13,7 +13,7 @@ Rotate STEALTH_VERSION whenever the init script content changes so bans can be
 git-bisect'd to a specific revision.
 """
 
-STEALTH_VERSION = "2026.04.22"
+STEALTH_VERSION = "2026.04.23"
 
 TINDER_LOCALE = "en-US"
 TINDER_TIMEZONE = "Asia/Phnom_Penh"
@@ -99,23 +99,42 @@ def get_init_script() -> str:
   } catch (e) {}
 
   // --- navigator.plugins (realistic Chrome internal PDF viewers) ---
+  // Build a PROPER PluginArray (not a hacked Array) so that
+  // Object.prototype.toString.call(navigator.plugins) === '[object PluginArray]'
+  // and each item passes `instanceof Plugin`.
   try {
-    const fakePlugins = [
+    const pluginsData = [
       { name: 'PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
       { name: 'Chrome PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
       { name: 'Chromium PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
       { name: 'Microsoft Edge PDF Viewer', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
       { name: 'WebKit built-in PDF', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
     ];
+
+    const buildPlugin = (data) => {
+      const plugin = Object.create(Plugin.prototype);
+      Object.defineProperty(plugin, 'name', { value: data.name, enumerable: true });
+      Object.defineProperty(plugin, 'filename', { value: data.filename, enumerable: true });
+      Object.defineProperty(plugin, 'description', { value: data.description, enumerable: true });
+      Object.defineProperty(plugin, 'length', { value: 0, enumerable: true });
+      plugin.item = registerNative(function item() { return null; }, 'item');
+      plugin.namedItem = registerNative(function namedItem() { return null; }, 'namedItem');
+      return plugin;
+    };
+
+    const plist = Object.create(PluginArray.prototype);
+    const builtPlugins = pluginsData.map(buildPlugin);
+    builtPlugins.forEach((p, i) => {
+      Object.defineProperty(plist, i, { value: p, enumerable: true });
+      Object.defineProperty(plist, p.name, { value: p, enumerable: false });
+    });
+    Object.defineProperty(plist, 'length', { value: builtPlugins.length, enumerable: false });
+    plist.item = registerNative(function item(i) { return plist[i] || null; }, 'item');
+    plist.namedItem = registerNative(function namedItem(n) { return plist[n] || null; }, 'namedItem');
+    plist.refresh = registerNative(function refresh() {}, 'refresh');
+
     Object.defineProperty(Navigator.prototype, 'plugins', {
-      get: registerNative(function plugins() {
-        const list = fakePlugins.slice();
-        list.item = (i) => list[i] || null;
-        list.namedItem = (n) => list.find(p => p.name === n) || null;
-        list.refresh = () => {};
-        Object.setPrototypeOf(list, PluginArray.prototype);
-        return list;
-      }, 'plugins'),
+      get: registerNative(function plugins() { return plist; }, 'plugins'),
       configurable: true,
     });
   } catch (e) {}
@@ -261,7 +280,7 @@ def get_init_script() -> str:
     }
   } catch (e) {}
 
-  // --- window.chrome populated ---
+  // --- window.chrome populated (runtime + app + csi + loadTimes) ---
   try {
     if (!window.chrome) {
       window.chrome = {};
@@ -274,6 +293,52 @@ def get_init_script() -> str:
         PlatformOs: { LINUX: 'linux', MAC: 'mac', WIN: 'win' },
         RequestUpdateCheckStatus: { NO_UPDATE: 'no_update' },
       };
+    }
+    // Real Chrome runtime exposes these as functions — detectors call them.
+    if (typeof window.chrome.runtime.connect !== 'function') {
+      window.chrome.runtime.connect = registerNative(function connect() {
+        return {
+          disconnect: registerNative(function disconnect() {}, 'disconnect'),
+          postMessage: registerNative(function postMessage() {}, 'postMessage'),
+          onDisconnect: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
+          onMessage: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
+          name: '',
+        };
+      }, 'connect');
+    }
+    if (typeof window.chrome.runtime.sendMessage !== 'function') {
+      window.chrome.runtime.sendMessage = registerNative(function sendMessage() { return undefined; }, 'sendMessage');
+    }
+    if (typeof window.chrome.runtime.getManifest !== 'function') {
+      window.chrome.runtime.getManifest = registerNative(function getManifest() { return undefined; }, 'getManifest');
+    }
+    if (typeof window.chrome.runtime.getURL !== 'function') {
+      window.chrome.runtime.getURL = registerNative(function getURL(path) { return 'chrome-extension://invalid/' + (path || ''); }, 'getURL');
+    }
+    // chrome.app / chrome.csi / chrome.loadTimes — long-deprecated but fingerprinters still check.
+    if (!window.chrome.app) {
+      window.chrome.app = {
+        isInstalled: false,
+        InstallState: { DISABLED: 'disabled', INSTALLED: 'installed', NOT_INSTALLED: 'not_installed' },
+        RunningState: { CANNOT_RUN: 'cannot_run', READY_TO_RUN: 'ready_to_run', RUNNING: 'running' },
+      };
+    }
+    if (typeof window.chrome.csi !== 'function') {
+      window.chrome.csi = registerNative(function csi() {
+        return { onloadT: Date.now(), startE: Date.now() - 1000, pageT: 1000, tran: 15 };
+      }, 'csi');
+    }
+    if (typeof window.chrome.loadTimes !== 'function') {
+      window.chrome.loadTimes = registerNative(function loadTimes() {
+        const now = Date.now() / 1000;
+        return {
+          requestTime: now - 2, startLoadTime: now - 1.5, commitLoadTime: now - 1.2,
+          finishDocumentLoadTime: now - 0.8, finishLoadTime: now - 0.2,
+          firstPaintTime: now - 0.7, firstPaintAfterLoadTime: 0, navigationType: 'Other',
+          wasFetchedViaSpdy: true, wasNpnNegotiated: true, npnNegotiatedProtocol: 'h2',
+          wasAlternateProtocolAvailable: false, connectionInfo: 'h2',
+        };
+      }, 'loadTimes');
     }
   } catch (e) {}
 
