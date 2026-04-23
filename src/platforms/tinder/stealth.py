@@ -1,8 +1,9 @@
 """Tinder anti-detection layer.
 
-Per T1-B (2026-04-22): Cambodia-honest fingerprint. Locale en-US, timezone
-Asia/Phnom_Penh. No VPN, no residential proxy. Assumes Stéphane targets
-expat/Khmer profiles from Siem Reap.
+T1-B superseded on 2026-04-23 → T1-A (VPN France). Reason: Tinder Web from
+Cambodia IP only offers Google auth, no phone signup path. Switched to
+ProtonVPN FR so Tinder serves the phone-first flow. Fingerprint stack now
+aligns to France (locale fr-FR, timezone Europe/Paris).
 
 Per security + research reviews:
 - Use `patchright.async_api` instead of `playwright.async_api` (drop-in)
@@ -13,11 +14,11 @@ Rotate STEALTH_VERSION whenever the init script content changes so bans can be
 git-bisect'd to a specific revision.
 """
 
-STEALTH_VERSION = "2026.04.23"
+STEALTH_VERSION = "2026.04.23-fr"
 
-TINDER_LOCALE = "en-US"
-TINDER_TIMEZONE = "Asia/Phnom_Penh"
-TINDER_LANGUAGES = ["en-US", "en", "fr-FR", "fr"]
+TINDER_LOCALE = "fr-FR"
+TINDER_TIMEZONE = "Europe/Paris"
+TINDER_LANGUAGES = ["fr-FR", "fr", "en-US", "en"]
 TINDER_VIEWPORT = {"width": 1440, "height": 900}
 
 
@@ -143,7 +144,7 @@ def get_init_script() -> str:
   try {
     Object.defineProperty(Navigator.prototype, 'languages', {
       get: registerNative(function languages() {
-        return ['en-US', 'en', 'fr-FR', 'fr'];
+        return ['fr-FR', 'fr', 'en-US', 'en'];
       }, 'languages'),
       configurable: true,
     });

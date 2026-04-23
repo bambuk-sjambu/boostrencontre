@@ -104,12 +104,12 @@ def test_stealth_version_set():
     assert "." in STEALTH_VERSION
 
 
-def test_stealth_launch_kwargs_cambodia():
-    """T1-B: Cambodia-honest fingerprint."""
+def test_stealth_launch_kwargs_france():
+    """T1-A (pivot 2026-04-23): France fingerprint via ProtonVPN FR."""
     from src.platforms.tinder.stealth import get_launch_kwargs
     kw = get_launch_kwargs()
-    assert kw["locale"] == "en-US"
-    assert kw["timezone_id"] == "Asia/Phnom_Penh"
+    assert kw["locale"] == "fr-FR"
+    assert kw["timezone_id"] == "Europe/Paris"
     assert "viewport" in kw
 
 
